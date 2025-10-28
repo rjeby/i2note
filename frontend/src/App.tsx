@@ -1,10 +1,10 @@
 import "./App.css";
-import Sidebar from "./components/Sidebar";
+import VisiualizeNote from "./components/VisiualizeNote";
 
 function App() {
   return (
     <>
-      <Sidebar />
+      <VisiualizeNote/>
     </>
   );
 }
