@@ -9,7 +9,13 @@ interface Note {
   editedAt: string;
 }
 
-export type NotesState = Note[];
+export interface NotesState {
+  notes: Note[];
+  selectedNoteId: number;
+  content: string;
+  editedContent: string;
+  isBeingEdited: boolean;
+}
 
 const notes = [
   {
@@ -155,18 +161,70 @@ const notes = [
   },
 ];
 
-const initialState: NotesState = notes;
+const initialState: NotesState = {
+  notes: notes,
+  selectedNoteId: 1,
+  content: "",
+  editedContent: "",
+  isBeingEdited: false,
+};
 
 export const notesSlice = createSlice({
   name: "notes",
   initialState,
   reducers: {
     addNote: (state, action: PayloadAction<Note>) => {
-      return [...state, action.payload];
+      return { ...state, notes: [...state.notes, action.payload] };
+    },
+    updateNoteById: (
+      state,
+      action: PayloadAction<{ id: number; content: string }>,
+    ) => {
+      const updatedNotes = state.notes.map((note) =>
+        note.id !== action.payload.id
+          ? note
+          : { ...note, content: action.payload.content },
+      );
+
+      return { ...state, notes: updatedNotes };
+    },
+    updateSelectedNoteId: (state, action: PayloadAction<number>) => {
+      const note = state.notes.find((note) => note.id === action.payload);
+      return {
+        ...state,
+        selectedNoteId: action.payload,
+        content: note ? note.content : "",
+        editedContent: note ? note.content : "",
+      };
+    },
+    updateContent: (state, action: PayloadAction<string>) => {
+      return {
+        ...state,
+        content: action.payload,
+      };
+    },
+    updateEditedContent: (state, action: PayloadAction<string>) => {
+      return {
+        ...state,
+        editedContent: action.payload,
+      };
+    },
+    updateIsBeignEdited: (state, action: PayloadAction<boolean>) => {
+      return {
+        ...state,
+        isBeingEdited: action.payload,
+      };
     },
   },
 });
 
-export const { addNote } = notesSlice.actions;
+export const {
+  addNote,
+  updateNoteById,
+  updateSelectedNoteId,
+  updateContent,
+  updateEditedContent,
+  updateIsBeignEdited,
+} = notesSlice.actions;
 export const selectNotes = (state: RootState) => state.notes;
 export default notesSlice.reducer;

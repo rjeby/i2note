@@ -1,3 +1,4 @@
+import { useState } from "react";
 import NodesSidebar from "../components/NotesSidebar";
 import NotesActions from "./NotesActions";
 import NotesHeader from "./NotesHeader";
