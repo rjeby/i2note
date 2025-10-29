@@ -7,7 +7,7 @@ const VisiualizeNote = () => {
   const [content, setContent] = useState("");
   const [editedContent, setEditedContent] = useState("");
   return (
-    <div className="flex flex-1 flex-col px-6 pt-4">
+    <div className="col-span-1 flex flex-1 flex-col border-x border-x-gray-300 px-6 pt-4">
       <div className="flex flex-col gap-4 border-b border-b-gray-300 pb-8">
         <span className="text-2xl font-bold">
           React Performance Optimization

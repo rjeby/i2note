@@ -1,7 +1,8 @@
 const NotesHeader = () => {
   return (
-    <div className="flex items-center justify-between border border-b-gray-300 px-8 py-4">
+    <div className="col-span-3 flex items-center justify-between border-b border-b-gray-300 px-8 py-6">
       <span className="text-2xl font-bold">All Notes</span>
+
       <input
         type="text"
         name="search"

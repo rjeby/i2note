@@ -1,15 +1,15 @@
 import NodesSidebar from "../components/NotesSidebar";
 import NotesActions from "./NotesActions";
 import NotesHeader from "./NotesHeader";
+import VisiualizeNote from "./VisiualizeNote";
 
 const Notes = () => {
   return (
-    <div className="flex flex-1 flex-col border border-black">
+    <div className="grid h-screen flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr]">
       <NotesHeader />
-      <div className="flex">
-        <NodesSidebar />
-        <NotesActions />
-      </div>
+      <NodesSidebar />
+      <VisiualizeNote />
+      <NotesActions />
     </div>
   );
 };
