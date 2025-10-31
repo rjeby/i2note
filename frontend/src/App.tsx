@@ -1,15 +1,8 @@
 import "./App.css";
-import Notes from "./components/Notes";
+import Home from "./components/Home";
 
 function App() {
-  // note: {id: number, content: text, created_at: date, edited_at: date}
-  // tag: {id: number, content: text}
-  // notesTags: {noteId: number, tagId: number}
-  return (
-    <>
-      <Notes />
-    </>
-  );
+  return <Home />;
 }
 
 export default App;
