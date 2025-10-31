@@ -13,7 +13,7 @@ const HomeSidebar = () => {
   const noteTags = homeState.noteTags;
   const hasTags = noteTags.length !== 0;
   return (
-    <div className="flex flex-col border-r border-r-gray-300 px-4 py-8">
+    <div className="flex w-xs flex-col border-r border-r-gray-300 px-4 py-8">
       <div className="flex flex-col">
         <div className="mb-6 flex items-center gap-2">
           <img src={logo} alt="Logo" className="h-8 w-8" />
@@ -38,7 +38,7 @@ const HomeSidebar = () => {
           <p className="flex flex-col gap-2 rounded-sm bg-gray-200 px-2 py-2">
             <span>No Tags yet.</span>
             <span className="text-sm font-bold italic">
-              Add a first tag to organize your notes!
+              Add tags to organize your notes!
             </span>
           </p>
         )}

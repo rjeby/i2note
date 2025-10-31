@@ -6,23 +6,41 @@ import { formateISO8601Date } from "../utils";
 const AvailableNotes = () => {
   const homeState = useAppSelector((state) => state.home);
   const notes = homeState.notes;
-  const hasNotes = notes.length !== 0;
+  const hasNotes = notes.some((note) =>
+    homeState.selectedNotesType === "all-notes"
+      ? !note.isArchived
+      : note.isArchived,
+  );
   return (
     <div className="flex w-xs flex-col gap-4 overflow-scroll border-r border-r-gray-300 py-4 pr-4 pl-8">
-      <button type="button" className="rounded-sm bg-blue-600 py-2 text-white">
-        Create New Note
-      </button>
+      {homeState.selectedNotesType === "all-notes" && (
+        <button className="rounded-sm bg-blue-600 py-2 text-white">
+          Create New Note
+        </button>
+      )}
       {hasNotes ? (
         <ul className="flex flex-col gap-4">
-          {notes.map((note) => (
-            <NoteInfoCard key={note.id} note={note} />
-          ))}
+          {notes
+            .filter((note) =>
+              homeState.selectedNotesType === "all-notes"
+                ? !note.isArchived
+                : note.isArchived,
+            )
+            .map((note) => (
+              <NoteInfoCard key={note.id} note={note} />
+            ))}
         </ul>
       ) : (
         <p className="flex flex-col gap-2 rounded-sm bg-gray-200 py-2 pl-2">
-          <span>No Notes yet.</span>
+          <span>
+            {homeState.selectedNotesType === "all-notes"
+              ? "No Notes yet."
+              : "Nothing in the archive."}
+          </span>
           <span className="text-sm font-bold italic">
-            Start by creating your first one!
+            {homeState.selectedNotesType === "all-notes"
+              ? "Start by creating your first one!"
+              : "Archived notes will appear here!"}
           </span>
         </p>
       )}

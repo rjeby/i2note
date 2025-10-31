@@ -52,7 +52,7 @@ export const homeSlice = createSlice({
         .map((tag) => tag.content);
       return {
         ...state,
-        selectedNoteId: action.payload,
+        selectedNoteId: note ? action.payload : -1,
         isBeingEdited: false,
         title: note ? note.title : "",
         content: note ? note.content : "",
@@ -140,13 +140,34 @@ export const homeSlice = createSlice({
       };
     },
     archiveNote: (state) => {
+      const notes = state.notes.map((note) =>
+        note.id === state.selectedNoteId ? { ...note, isArchived: true } : note,
+      );
+      const nonArchivedNote = notes.find((note) => !note.isArchived);
+
+      const associatedTagIds = nonArchivedNote
+        ? new Set(
+            state.noteTagAssociations
+              .filter(
+                (association) => association.noteId === nonArchivedNote.id,
+              )
+              .map((association) => association.tagId),
+          )
+        : new Set();
+      const noteTags = nonArchivedNote
+        ? state.noteTags
+            .filter((tag) => associatedTagIds.has(tag.id))
+            .map((tag) => tag.content)
+        : [];
       return {
         ...state,
-        notes: notes.map((note) =>
-          note.id === state.selectedNoteId
-            ? { ...note, isArchived: true }
-            : note,
-        ),
+        notes: notes,
+        selectedNoteId: nonArchivedNote ? nonArchivedNote.id : -1,
+        isBeingEdited: false,
+        title: nonArchivedNote ? nonArchivedNote.title : "",
+        content: nonArchivedNote ? nonArchivedNote.content : "",
+        tag: "",
+        tags: noteTags,
       };
     },
     deleteNote: (state) => {
@@ -161,11 +182,36 @@ export const homeSlice = createSlice({
       );
       const noteTags = state.noteTags.filter((tag) => presentTags.has(tag.id));
 
+      const validNote = notes.find((note) =>
+        state.selectedNotesType === "all-notes"
+          ? !note.isArchived
+          : note.isArchived,
+      );
+
+      const associatedTagIds = validNote
+        ? new Set(
+            associations
+              .filter((association) => association.noteId === validNote.id)
+              .map((association) => association.tagId),
+          )
+        : new Set();
+      const validNoteTags = validNote
+        ? noteTags
+            .filter((tag) => associatedTagIds.has(tag.id))
+            .map((tag) => tag.content)
+        : [];
+
       return {
         ...state,
         notes: notes,
         noteTagAssociations: associations,
         noteTags: noteTags,
+        selectedNoteId: validNote ? validNote.id : -1,
+        isBeingEdited: false,
+        title: validNote ? validNote.title : "",
+        content: validNote ? validNote.content : "",
+        tag: "",
+        tags: validNoteTags,
       };
     },
   },

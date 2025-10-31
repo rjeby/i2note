@@ -82,7 +82,7 @@ const NoteContent = () => {
                 <img src={iconClock} alt="Clock Icon" />
                 <span>Last Edited</span>
               </div>
-              <span>{"23 Octobre 2025"}</span>
+              <span>{"jj mmm yyyy"}</span>
             </div>
           )}
         </div>
