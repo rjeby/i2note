@@ -10,6 +10,7 @@ export interface HomeState {
   noteTagAssociations: NoteTagAssociation[];
   selectedNotesType: NoteType;
   selectedNoteId: number;
+  selectedTagId: number;
   isBeingEdited: boolean;
   title: string;
   content: string;
@@ -23,6 +24,7 @@ const initialState: HomeState = {
   noteTagAssociations: noteTagAssociations,
   selectedNotesType: "all-notes",
   selectedNoteId: -1,
+  selectedTagId: -1,
   isBeingEdited: false,
   title: "",
   content: "",
@@ -36,9 +38,7 @@ export const homeSlice = createSlice({
   reducers: {
     setSelectedNotesType: (state, action: PayloadAction<NoteType>) => {
       const validNote = state.notes.find((note) =>
-        action.payload === "all-notes"
-          ? !note.isArchived
-          : note.isArchived,
+        action.payload === "all-notes" ? !note.isArchived : note.isArchived,
       );
 
       const associatedTagIds = validNote
@@ -62,6 +62,13 @@ export const homeSlice = createSlice({
         content: validNote ? validNote.content : "",
         tag: "",
         tags: validNoteTags,
+      };
+    },
+    setSlectedTagId: (state, action: PayloadAction<number>) => {
+      return {
+        ...state,
+        selectedTagId:
+          state.selectedTagId === action.payload ? -1 : action.payload,
       };
     },
     setSelectedNoteId: (state, action: PayloadAction<number>) => {
@@ -108,6 +115,29 @@ export const homeSlice = createSlice({
         isBeingEdited: action.payload,
       };
     },
+    cancelEditing: (state) => {
+      const note = state.notes.find((note) => note.id === state.selectedNoteId);
+      const associatedTagIds = note
+        ? new Set(
+            state.noteTagAssociations
+              .filter((association) => association.noteId === note.id)
+              .map((association) => association.tagId),
+          )
+        : new Set();
+      const noteTags = note
+        ? state.noteTags
+            .filter((tag) => associatedTagIds.has(tag.id))
+            .map((tag) => tag.content)
+        : [];
+      return {
+        ...state,
+        isBeingEdited: false,
+        title: note ? note.title : "",
+        content: note ? note.content : "",
+        tags: noteTags,
+        tag: "",
+      };
+    },
     setTags: (state, action: PayloadAction<string[]>) => {
       return {
         ...state,
@@ -136,16 +166,46 @@ export const homeSlice = createSlice({
     },
     updateNote: (state) => {
       let maxTagId = Math.max(...state.noteTags.map((tag) => tag.id));
-      const noteTagsSet = new Set(state.noteTags.map((tag) => tag.content));
-      const noteTags = [...state.noteTags];
-      const noteTagAssociations = [...state.noteTagAssociations];
+      const tags = new Set(state.tags);
+      const currentNoteTagIds = new Set(
+        state.noteTagAssociations
+          .filter((association) => association.noteId === state.selectedNoteId)
+          .map((association) => association.tagId),
+      );
+      const currentNoteTagsContent = new Set(
+        state.noteTags
+          .filter((tag) => currentNoteTagIds.has(tag.id))
+          .map((tag) => tag.content),
+      );
+      const toDeleteTagIds = new Set(
+        state.noteTags
+          .filter(
+            (tag) => currentNoteTagIds.has(tag.id) && !tags.has(tag.content),
+          )
+          .map((tag) => tag.id),
+      );
+
+      const noteTagAssociations = state.noteTagAssociations.filter(
+        (association) =>
+          !(
+            association.noteId === state.selectedNoteId &&
+            toDeleteTagIds.has(association.tagId)
+          ),
+      );
+
+      const associatedTagIds = new Set(
+        state.noteTagAssociations.map((association) => association.tagId),
+      );
+      const noteTags = state.noteTags.filter((tag) =>
+        associatedTagIds.has(tag.id),
+      );
       const notes = state.notes.map((note) =>
         note.id === state.selectedNoteId
           ? { ...note, title: state.title, content: state.content }
           : note,
       );
       for (const tag of state.tags) {
-        if (!noteTagsSet.has(tag)) {
+        if (!currentNoteTagsContent.has(tag)) {
           const id = ++maxTagId;
           noteTags.push({ id: id, content: tag });
           noteTagAssociations.push({
@@ -285,6 +345,8 @@ export const {
   archiveNote,
   unarchiveNote,
   deleteNote,
+  cancelEditing,
+  setSlectedTagId,
 } = homeSlice.actions;
 export const selectHome = (state: RootState) => state.home;
 export default homeSlice.reducer;

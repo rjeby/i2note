@@ -6,11 +6,22 @@ import { formateISO8601Date } from "../utils";
 const AvailableNotes = () => {
   const homeState = useAppSelector((state) => state.home);
   const notes = homeState.notes;
-  const hasNotes = notes.some((note) =>
-    homeState.selectedNotesType === "all-notes"
-      ? !note.isArchived
-      : note.isArchived,
+  const noteAssociatedToSelectedTagIds = new Set(
+    homeState.noteTagAssociations
+      .filter(
+        (association) =>
+          homeState.selectedTagId === -1 ||
+          association.tagId === homeState.selectedTagId,
+      )
+      .map((association) => association.noteId),
   );
+
+  const filtredNotes = notes.filter((note) =>
+    homeState.selectedNotesType === "all-notes"
+      ? !note.isArchived && noteAssociatedToSelectedTagIds.has(note.id)
+      : note.isArchived && noteAssociatedToSelectedTagIds.has(note.id),
+  );
+  const hasNotes = filtredNotes.length !== 0;
   return (
     <div className="flex w-xs flex-col gap-4 overflow-scroll border-r border-r-gray-300 py-4 pr-4 pl-8">
       {homeState.selectedNotesType === "all-notes" && (
@@ -20,15 +31,9 @@ const AvailableNotes = () => {
       )}
       {hasNotes ? (
         <ul className="flex flex-col gap-4">
-          {notes
-            .filter((note) =>
-              homeState.selectedNotesType === "all-notes"
-                ? !note.isArchived
-                : note.isArchived,
-            )
-            .map((note) => (
-              <NoteInfoCard key={note.id} note={note} />
-            ))}
+          {filtredNotes.map((note) => (
+            <NoteInfoCard key={note.id} note={note} />
+          ))}
         </ul>
       ) : (
         <p className="flex flex-col gap-2 rounded-sm bg-gray-200 py-2 pl-2">

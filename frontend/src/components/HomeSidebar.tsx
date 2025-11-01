@@ -5,10 +5,11 @@ import iconChevronRight from "../assets/icon-chevron-right.svg";
 import iconTag from "../assets/icon-tag.svg";
 
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { setSelectedNotesType } from "../slices/homeSlice";
+import { setSelectedNotesType, setSlectedTagId } from "../slices/homeSlice";
 import type { ShowNotesProps, TagCardProps } from "../types";
 
 const HomeSidebar = () => {
+  const dispatch = useAppDispatch();
   const homeState = useAppSelector((state) => state.home);
   const notesSetIds = new Set(
     homeState.notes
@@ -31,7 +32,7 @@ const HomeSidebar = () => {
       <div className="flex flex-col">
         <div className="mb-6 flex items-center gap-2">
           <img src={logo} alt="Logo" className="h-8 w-8" />
-          <span className="text-2xl">i2note</span>
+          <span className="text-2xl font-medium">i2note</span>
         </div>
         <div className="flex flex-col gap-4 border-b border-b-gray-300 pb-4">
           <ShowNotes type={"all-notes"} />
@@ -43,8 +44,16 @@ const HomeSidebar = () => {
         {hasTags ? (
           <ul className="flex flex-1 flex-col gap-2 overflow-scroll pr-4">
             {noteTags.map((tag) => (
-              <li className="rounded-sm px-2 py-2 hover:bg-gray-100">
-                <TagCard key={tag.id} tag={tag.content} />
+              <li
+                key={tag.id}
+                className="rounded-sm px-2 py-2 hover:scale-105"
+                style={{
+                  background:
+                    homeState.selectedTagId === tag.id ? "#f3f4f6" : "",
+                }}
+                onClick={() => dispatch(setSlectedTagId(tag.id))}
+              >
+                <TagCard tag={tag.content} />
               </li>
             ))}
           </ul>
@@ -72,9 +81,6 @@ const ShowNotes = ({ type }: ShowNotesProps) => {
     <button
       type="button"
       className="flex items-center justify-between rounded-sm px-2 py-2 hover:bg-gray-100"
-      style={{
-        background: isNotesTypeSelected ? "#f3f4f6" : "",
-      }}
       onClick={() => dispatch(setSelectedNotesType(type))}
     >
       <div className="flex items-center gap-4">

@@ -14,6 +14,7 @@ import {
   archiveNote,
   deleteNote,
   unarchiveNote,
+  cancelEditing,
 } from "../slices/homeSlice";
 import type { TagCardProps } from "../types";
 import { formateISO8601Date } from "../utils";
@@ -75,7 +76,7 @@ const NoteContent = () => {
             {homeState.tags.length !== 0 ? (
               <ul className="flex max-h-20 max-w-md flex-wrap gap-2 overflow-scroll">
                 {homeState.tags.map((tag) => (
-                  <TagCard tag={tag} />
+                  <TagCard key={tag} tag={tag} />
                 ))}
               </ul>
             ) : (
@@ -124,7 +125,7 @@ const NoteContent = () => {
             <button
               type="button"
               className="rounded-sm bg-gray-200 px-4 py-2 text-gray-500"
-              onClick={() => dispatch(setIsBeingEdited(false))}
+              onClick={() => dispatch(cancelEditing())}
             >
               Cancel
             </button>
@@ -169,7 +170,9 @@ const NoteContent = () => {
 };
 
 const TagCard = ({ tag }: TagCardProps) => {
-  return <span className="rounded-sm bg-gray-300 px-2 py-1">{tag}</span>;
+  return (
+    <span className="rounded-sm bg-gray-300 px-2 py-1">{tag}</span>
+  );
 };
 
 export default NoteContent;
