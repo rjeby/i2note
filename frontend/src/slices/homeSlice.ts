@@ -35,9 +35,33 @@ export const homeSlice = createSlice({
   initialState,
   reducers: {
     setSelectedNotesType: (state, action: PayloadAction<NoteType>) => {
+      const validNote = state.notes.find((note) =>
+        action.payload === "all-notes"
+          ? !note.isArchived
+          : note.isArchived,
+      );
+
+      const associatedTagIds = validNote
+        ? new Set(
+            state.noteTagAssociations
+              .filter((association) => association.noteId === validNote.id)
+              .map((association) => association.tagId),
+          )
+        : new Set();
+      const validNoteTags = validNote
+        ? noteTags
+            .filter((tag) => associatedTagIds.has(tag.id))
+            .map((tag) => tag.content)
+        : [];
       return {
         ...state,
         selectedNotesType: action.payload,
+        selectedNoteId: validNote ? validNote.id : -1,
+        isBeingEdited: false,
+        title: validNote ? validNote.title : "",
+        content: validNote ? validNote.content : "",
+        tag: "",
+        tags: validNoteTags,
       };
     },
     setSelectedNoteId: (state, action: PayloadAction<number>) => {
@@ -170,6 +194,37 @@ export const homeSlice = createSlice({
         tags: noteTags,
       };
     },
+    unarchiveNote: (state) => {
+      const notes = state.notes.map((note) =>
+        note.id === state.selectedNoteId
+          ? { ...note, isArchived: false }
+          : note,
+      );
+      const archivedNote = notes.find((note) => note.isArchived);
+
+      const associatedTagIds = archivedNote
+        ? new Set(
+            state.noteTagAssociations
+              .filter((association) => association.noteId === archivedNote.id)
+              .map((association) => association.tagId),
+          )
+        : new Set();
+      const noteTags = archivedNote
+        ? state.noteTags
+            .filter((tag) => associatedTagIds.has(tag.id))
+            .map((tag) => tag.content)
+        : [];
+      return {
+        ...state,
+        notes: notes,
+        selectedNoteId: archivedNote ? archivedNote.id : -1,
+        isBeingEdited: false,
+        title: archivedNote ? archivedNote.title : "",
+        content: archivedNote ? archivedNote.content : "",
+        tag: "",
+        tags: noteTags,
+      };
+    },
     deleteNote: (state) => {
       const notes = state.notes.filter(
         (note) => note.id !== state.selectedNoteId,
@@ -228,6 +283,7 @@ export const {
   removeTag,
   updateNote,
   archiveNote,
+  unarchiveNote,
   deleteNote,
 } = homeSlice.actions;
 export const selectHome = (state: RootState) => state.home;

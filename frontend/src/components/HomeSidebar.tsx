@@ -10,7 +10,21 @@ import type { ShowNotesProps, TagCardProps } from "../types";
 
 const HomeSidebar = () => {
   const homeState = useAppSelector((state) => state.home);
-  const noteTags = homeState.noteTags;
+  const notesSetIds = new Set(
+    homeState.notes
+      .filter((note) =>
+        homeState.selectedNotesType === "all-notes"
+          ? !note.isArchived
+          : note.isArchived,
+      )
+      .map((note) => note.id),
+  );
+  const tagsSetIds = new Set(
+    homeState.noteTagAssociations
+      .filter((association) => notesSetIds.has(association.noteId))
+      .map((association) => association.tagId),
+  );
+  const noteTags = homeState.noteTags.filter((tag) => tagsSetIds.has(tag.id));
   const hasTags = noteTags.length !== 0;
   return (
     <div className="flex w-xs flex-col border-r border-r-gray-300 px-4 py-8">

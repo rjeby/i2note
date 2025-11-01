@@ -13,11 +13,17 @@ import {
   updateNote,
   archiveNote,
   deleteNote,
+  unarchiveNote,
 } from "../slices/homeSlice";
 import type { TagCardProps } from "../types";
+import { formateISO8601Date } from "../utils";
 const NoteContent = () => {
   const homeState = useAppSelector((state) => state.home);
   const dispatch = useAppDispatch();
+
+  const note = homeState.notes.find(
+    (note) => note.id === homeState.selectedNoteId,
+  );
 
   return (
     <div className="flex flex-1 flex-col px-6 pt-4">
@@ -82,7 +88,9 @@ const NoteContent = () => {
                 <img src={iconClock} alt="Clock Icon" />
                 <span>Last Edited</span>
               </div>
-              <span>{"jj mmm yyyy"}</span>
+              <span>
+                {note ? formateISO8601Date(note.editedAt) : "jj-mm-yyyy"}
+              </span>
             </div>
           )}
         </div>
@@ -128,19 +136,31 @@ const NoteContent = () => {
             <button
               type="button"
               className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
-              onClick={() => dispatch(archiveNote())}
+              onClick={() => {
+                if (note && note.isArchived) {
+                  dispatch(unarchiveNote());
+                }
+
+                if (note && !note.isArchived) {
+                  dispatch(archiveNote());
+                }
+              }}
             >
               <img src={iconArchive} alt="Archive Icon" />
-              <span>Archive Note</span>
+              <span>
+                {note && note.isArchived ? "Unarchive Note" : "Archive Note"}
+              </span>
             </button>
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
-              onClick={() => dispatch(deleteNote())}
-            >
-              <img src={iconDelete} alt="Delete Icon" />
-              <span>Delete Note</span>
-            </button>
+            {note && !note.isArchived && (
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
+                onClick={() => dispatch(deleteNote())}
+              >
+                <img src={iconDelete} alt="Delete Icon" />
+                <span>Delete Note</span>
+              </button>
+            )}
           </div>
         )}
       </div>
