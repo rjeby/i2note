@@ -9,7 +9,6 @@ const HomeContentHeader = () => {
       <span className="text-2xl font-bold">
         {selectedNotesType === "all-notes" ? "All Notes" : "Archived Notes"}
       </span>
-
       <input
         type="text"
         name="search"

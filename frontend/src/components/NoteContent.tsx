@@ -11,9 +11,8 @@ import {
   addTag,
   removeTag,
   updateNote,
-  archiveNote,
+  setNoteIsArchived,
   deleteNote,
-  unarchiveNote,
   cancelEditing,
 } from "../slices/homeSlice";
 import type { TagCardProps } from "../types";
@@ -138,12 +137,8 @@ const NoteContent = () => {
               type="button"
               className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
               onClick={() => {
-                if (note && note.isArchived) {
-                  dispatch(unarchiveNote());
-                }
-
-                if (note && !note.isArchived) {
-                  dispatch(archiveNote());
+                if (note) {
+                  dispatch(setNoteIsArchived(note && !note.isArchived));
                 }
               }}
             >
@@ -170,9 +165,7 @@ const NoteContent = () => {
 };
 
 const TagCard = ({ tag }: TagCardProps) => {
-  return (
-    <span className="rounded-sm bg-gray-300 px-2 py-1">{tag}</span>
-  );
+  return <span className="rounded-sm bg-gray-300 px-2 py-1">{tag}</span>;
 };
 
 export default NoteContent;
