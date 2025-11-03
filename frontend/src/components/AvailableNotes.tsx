@@ -5,6 +5,7 @@ import { formateISO8601Date } from "../utils";
 
 const AvailableNotes = () => {
   const homeState = useAppSelector((state) => state.home);
+  const filterByTitle = homeState.filterByTitle.trim().toLowerCase();
   const notes = homeState.notes;
   const noteAssociatedToSelectedTagIds = new Set(
     homeState.noteTagAssociations
@@ -16,10 +17,14 @@ const AvailableNotes = () => {
       .map((association) => association.noteId),
   );
 
-  const filtredNotes = notes.filter((note) =>
-    homeState.selectedNotesType === "all-notes"
-      ? !note.isArchived && noteAssociatedToSelectedTagIds.has(note.id)
-      : note.isArchived && noteAssociatedToSelectedTagIds.has(note.id),
+  const filtredNotes = notes.filter(
+    (note) =>
+      noteAssociatedToSelectedTagIds.has(note.id) &&
+      (!homeState.filterByTitle ||
+        (homeState.filterByTitle &&
+          note.title.trim().toLowerCase().startsWith(filterByTitle))) &&
+      ((homeState.selectedNotesType === "all-notes" && !note.isArchived) ||
+        (homeState.selectedNotesType !== "all-notes" && note.isArchived)),
   );
   const hasNotes = filtredNotes.length !== 0;
   return (
@@ -47,7 +52,7 @@ const AvailableNotes = () => {
           ))}
         </ul>
       ) : (
-        <p className="flex flex-col gap-2 rounded-sm bg-gray-200 py-2 px-2">
+        <p className="flex flex-col gap-2 rounded-sm bg-gray-200 px-2 py-2">
           <span>
             {homeState.selectedNotesType === "all-notes"
               ? "No Notes yet."

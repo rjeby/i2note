@@ -1,12 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type {
-  Note,
-  NotesFilter,
-  NoteTagAssociation,
-  NoteType,
-  Tag,
-} from "../types";
+import type { Note, NoteTagAssociation, NoteType, Tag } from "../types";
 
 import { notes, noteTags, noteTagAssociations } from "../data";
 
@@ -22,6 +16,7 @@ export interface HomeState {
   content: string;
   tag: string;
   tags: string[];
+  filterByTitle: string;
 }
 
 const initialState: HomeState = {
@@ -36,58 +31,35 @@ const initialState: HomeState = {
   content: "",
   tag: "",
   tags: [],
+  filterByTitle: "",
 };
 
 export const homeSlice = createSlice({
   name: "home",
   initialState,
   reducers: {
+    setFilterByTitle: (state, action: PayloadAction<string>) => {
+      return {
+        ...state,
+        filterByTitle: action.payload,
+        selectedTagId: -1,
+        selectedNoteId: -1,
+      };
+    },
     setSelectedNotesType: (state, action: PayloadAction<NoteType>) => {
-      const { filteredNote, filteredNoteTags } = generateFilteredNote(
-        state.notes,
-        state.noteTagAssociations,
-        state.noteTags,
-        {
-          isArchived: action.payload === "all-notes" ? false : true,
-          content: "",
-          title: "",
-          tagId: -1,
-        },
-      );
       return {
         ...state,
         selectedNotesType: action.payload,
         selectedTagId: -1,
-        selectedNoteId: filteredNote ? filteredNote.id : -1,
-        isBeingEdited: false,
-        title: filteredNote ? filteredNote.title : "",
-        content: filteredNote ? filteredNote.content : "",
-        tag: "",
-        tags: filteredNoteTags,
+        selectedNoteId: -1,
       };
     },
     setSlectedTagId: (state, action: PayloadAction<number>) => {
-      const { filteredNote, filteredNoteTags } = generateFilteredNote(
-        state.notes,
-        state.noteTagAssociations,
-        state.noteTags,
-        {
-          isArchived: state.selectedNotesType === "all-notes" ? false : true,
-          content: "",
-          title: "",
-          tagId: action.payload,
-        },
-      );
       return {
         ...state,
         selectedTagId:
           state.selectedTagId === action.payload ? -1 : action.payload,
-        selectedNoteId: filteredNote ? filteredNote.id : -1,
-        isBeingEdited: false,
-        title: filteredNote ? filteredNote.title : "",
-        content: filteredNote ? filteredNote.content : "",
-        tag: "",
-        tags: filteredNoteTags,
+        selectedNoteId: -1,
       };
     },
     setSelectedNoteId: (state, action: PayloadAction<number>) => {
@@ -111,12 +83,14 @@ export const homeSlice = createSlice({
           : [];
       return {
         ...state,
+        selectedTagId: -1,
         selectedNoteId: note ? action.payload : -1,
         isBeingEdited: false,
         title: note ? note.title : "",
         content: note ? note.content : "",
         tag: "",
         tags: noteTags,
+        filterByTitle: "",
       };
     },
     setTitle: (state, action: PayloadAction<string>) => {
@@ -179,6 +153,7 @@ export const homeSlice = createSlice({
       }
       return {
         ...state,
+        tag: "",
         tags: [...state.tags, newTag],
       };
     },
@@ -189,6 +164,7 @@ export const homeSlice = createSlice({
       }
       return {
         ...state,
+        tag: "",
         tags: state.tags.filter((tag) => tag !== toDelete),
       };
     },
@@ -257,26 +233,11 @@ export const homeSlice = createSlice({
           ? { ...note, isArchived: action.payload }
           : note,
       );
-      const { filteredNote, filteredNoteTags } = generateFilteredNote(
-        notes,
-        state.noteTagAssociations,
-        state.noteTags,
-        {
-          isArchived: !action.payload,
-          content: "",
-          title: "",
-          tagId: state.selectedTagId,
-        },
-      );
+
       return {
         ...state,
         notes: notes,
-        selectedNoteId: filteredNote ? filteredNote.id : -1,
-        isBeingEdited: false,
-        title: filteredNote ? filteredNote.title : "",
-        content: filteredNote ? filteredNote.content : "",
-        tag: "",
-        tags: filteredNoteTags,
+        selectedNoteId: -1,
       };
     },
     deleteNote: (state) => {
@@ -290,29 +251,13 @@ export const homeSlice = createSlice({
         associations.map((association) => association.tagId),
       );
       const noteTags = state.noteTags.filter((tag) => presentTags.has(tag.id));
-      const { filteredNote, filteredNoteTags } = generateFilteredNote(
-        notes,
-        state.noteTagAssociations,
-        state.noteTags,
-        {
-          isArchived: state.selectedNotesType === "all-notes" ? false : true,
-          content: "",
-          title: "",
-          tagId: state.selectedTagId,
-        },
-      );
 
       return {
         ...state,
         notes: notes,
         noteTagAssociations: associations,
         noteTags: noteTags,
-        selectedNoteId: filteredNote ? filteredNote.id : -1,
-        isBeingEdited: false,
-        title: filteredNote ? filteredNote.title : "",
-        content: filteredNote ? filteredNote.content : "",
-        tag: "",
-        tags: filteredNoteTags,
+        selectedNoteId: -1,
       };
     },
   },
@@ -332,49 +277,7 @@ export const {
   deleteNote,
   cancelEditing,
   setSlectedTagId,
+  setFilterByTitle,
 } = homeSlice.actions;
 export const selectHome = (state: RootState) => state.home;
 export default homeSlice.reducer;
-
-const generateFilteredNote = (
-  notes: Note[],
-  noteTagAssociations: NoteTagAssociation[],
-  noteTags: Tag[],
-  filter: NotesFilter,
-) => {
-  const notesAssociatedWithTagIds =
-    filter.tagId !== -1
-      ? new Set(
-          noteTagAssociations
-            .filter((association) => association.tagId === filter.tagId)
-            .map((associations) => associations.noteId),
-        )
-      : new Set();
-  const filteredNote = notes.find((note) => {
-    if (
-      (filter.tagId !== -1 && !notesAssociatedWithTagIds.has(note.id)) ||
-      (filter.content !== "" && !note.content.startsWith(filter.content)) ||
-      (filter.title !== "" && !note.title.startsWith(filter.title)) ||
-      filter.isArchived !== note.isArchived
-    ) {
-      return false;
-    }
-
-    return true;
-  });
-
-  const associatedTagIds = filteredNote
-    ? new Set(
-        noteTagAssociations
-          .filter((association) => association.noteId === filteredNote.id)
-          .map((association) => association.tagId),
-      )
-    : new Set();
-  const filteredNoteTags = filteredNote
-    ? noteTags
-        .filter((tag) => associatedTagIds.has(tag.id))
-        .map((tag) => tag.content)
-    : [];
-
-  return { filteredNote: filteredNote, filteredNoteTags: filteredNoteTags };
-};
