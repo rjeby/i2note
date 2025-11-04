@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { setSelectedNoteId } from "../slices/homeSlice";
 import type { NoteInfoCardProps } from "../types";
@@ -79,9 +80,18 @@ const NoteInfoCard = ({ note }: NoteInfoCardProps) => {
   const tags = homeState.noteTags.filter((tag) => associatedTagIds.has(tag.id));
   const dispatch = useAppDispatch();
 
+  const noteInfoCardRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (homeState.selectedNoteId === note.id) {
+      noteInfoCardRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [note.id, homeState.selectedNoteId]);
+
   return (
     <button
       className="flex w-xs flex-col gap-2 rounded-sm border border-gray-300 p-2 hover:scale-105"
+      ref={noteInfoCardRef}
       style={{
         background:
           homeState.selectedNoteId === note.id ? "#e5e7eb" : "transparent",
