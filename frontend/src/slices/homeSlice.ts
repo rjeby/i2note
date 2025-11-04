@@ -3,6 +3,7 @@ import type { RootState } from "../store";
 import type { Note, NoteTagAssociation, NoteType, Tag } from "../types";
 
 import { notes, noteTags, noteTagAssociations } from "../data";
+import { formateISO8601Date } from "../utils";
 
 export interface HomeState {
   notes: Note[];
@@ -12,6 +13,7 @@ export interface HomeState {
   selectedNoteId: number;
   selectedTagId: number;
   isBeingEdited: boolean;
+  isNoteBeingCreated: boolean;
   title: string;
   content: string;
   tag: string;
@@ -27,6 +29,7 @@ const initialState: HomeState = {
   selectedNoteId: -1,
   selectedTagId: -1,
   isBeingEdited: false,
+  isNoteBeingCreated: false,
   title: "",
   content: "",
   tag: "",
@@ -38,6 +41,20 @@ export const homeSlice = createSlice({
   name: "home",
   initialState,
   reducers: {
+    setIsNoteBeingCreated: (state) => {
+      return {
+        ...state,
+        isNoteBeingCreated: true,
+        isBeingEdited: true,
+        selectedNoteId: -1,
+        selectedTagId: -1,
+        filterByTitle: "",
+        title: "",
+        content: "",
+        tag: "",
+        tags: [],
+      };
+    },
     setFilterByTitle: (state, action: PayloadAction<string>) => {
       return {
         ...state,
@@ -118,6 +135,13 @@ export const homeSlice = createSlice({
       };
     },
     cancelEditing: (state) => {
+      if (state.isNoteBeingCreated) {
+        return {
+          ...state,
+          isNoteBeingCreated: false,
+          isBeingEdited: false,
+        };
+      }
       const note = state.notes.find((note) => note.id === state.selectedNoteId);
       const associatedTagIds = note
         ? new Set(
@@ -168,6 +192,53 @@ export const homeSlice = createSlice({
         tags: state.tags.filter((tag) => tag !== toDelete),
       };
     },
+    createNote: (state) => {
+      let maxTagId = Math.max(...state.noteTags.map((tag) => tag.id));
+      const newNoteId = Math.max(...state.notes.map((note) => note.id)) + 1;
+      const updatedNotes = [
+        ...state.notes,
+        {
+          id: newNoteId,
+          title: state.title,
+          content: state.content,
+          editedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          isArchived: false,
+        },
+      ];
+      const noteTagAssociations = [...state.noteTagAssociations];
+      const noteTags = [...state.noteTags];
+      const associatedTagsContent = new Set(...state.tags);
+      const presentTagContent = new Set(
+        state.noteTags
+          .filter((tag) => associatedTagsContent.has(tag.content))
+          .map((tag) => tag.content),
+      );
+      const presentTagIds = state.noteTags
+        .filter((tag) => associatedTagsContent.has(tag.content))
+        .map((tag) => tag.id);
+
+      for (const tagId of presentTagIds) {
+        noteTagAssociations.push({ noteId: newNoteId, tagId: tagId });
+      }
+
+      for (const tag of state.tags) {
+        if (!presentTagContent.has(tag)) {
+          noteTags.push({ id: maxTagId + 1, content: tag });
+          noteTagAssociations.push({ noteId: newNoteId, tagId: maxTagId + 1 });
+          maxTagId++;
+        }
+      }
+
+      return {
+        ...state,
+        notes: updatedNotes,
+        noteTags: noteTags,
+        noteTagAssociations: noteTagAssociations,
+        isNoteBeingCreated: false,
+        isBeingEdited: false,
+      };
+    },
     updateNote: (state) => {
       let maxTagId = Math.max(...state.noteTags.map((tag) => tag.id));
       const tags = new Set(state.tags);
@@ -205,7 +276,12 @@ export const homeSlice = createSlice({
       );
       const notes = state.notes.map((note) =>
         note.id === state.selectedNoteId
-          ? { ...note, title: state.title, content: state.content }
+          ? {
+              ...note,
+              title: state.title,
+              content: state.content,
+              editedAt: formateISO8601Date(new Date().toISOString()),
+            }
           : note,
       );
       for (const tag of state.tags) {
@@ -278,6 +354,8 @@ export const {
   cancelEditing,
   setSlectedTagId,
   setFilterByTitle,
+  setIsNoteBeingCreated,
+  createNote
 } = homeSlice.actions;
 export const selectHome = (state: RootState) => state.home;
 export default homeSlice.reducer;

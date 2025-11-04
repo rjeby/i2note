@@ -81,6 +81,7 @@ const ShowNotes = ({ type }: ShowNotesProps) => {
     <button
       type="button"
       className="flex items-center justify-between rounded-sm px-2 py-2 hover:bg-gray-100"
+      style={{background: isNotesTypeSelected ? "#f3f4f6" : ""}}
       onClick={() => dispatch(setSelectedNotesType(type))}
     >
       <div className="flex items-center gap-4">

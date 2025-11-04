@@ -3,11 +3,13 @@ import AvailableNotes from "./AvailableNotes";
 import NoteContent from "./NoteContent";
 
 const HomeContentCore = () => {
-  const selectedNoteId = useAppSelector((state) => state.home.selectedNoteId);
+  const homeState = useAppSelector((state) => state.home);
   return (
     <div className="flex flex-1 overflow-scroll">
-      <AvailableNotes />
-      {selectedNoteId !== -1 && <NoteContent />}
+      {!homeState.isNoteBeingCreated && <AvailableNotes />}
+      {(homeState.selectedNoteId !== -1 || homeState.isNoteBeingCreated) && (
+        <NoteContent />
+      )}
     </div>
   );
 };

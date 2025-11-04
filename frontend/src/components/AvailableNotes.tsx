@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { setSelectedNoteId } from "../slices/homeSlice";
+import { setIsNoteBeingCreated, setSelectedNoteId } from "../slices/homeSlice";
 import type { NoteInfoCardProps } from "../types";
 import { formateISO8601Date } from "../utils";
 
 const AvailableNotes = () => {
   const homeState = useAppSelector((state) => state.home);
+  const dispatch = useAppDispatch();
   const filterByTitle = homeState.filterByTitle.trim().toLowerCase();
   const notes = homeState.notes;
   const noteAssociatedToSelectedTagIds = new Set(
@@ -17,10 +18,10 @@ const AvailableNotes = () => {
       )
       .map((association) => association.noteId),
   );
-
   const filtredNotes = notes.filter(
     (note) =>
-      noteAssociatedToSelectedTagIds.has(note.id) &&
+      (homeState.selectedTagId === -1 ||
+        noteAssociatedToSelectedTagIds.has(note.id)) &&
       (!homeState.filterByTitle ||
         (homeState.filterByTitle &&
           note.title.trim().toLowerCase().startsWith(filterByTitle))) &&
@@ -36,7 +37,10 @@ const AvailableNotes = () => {
       }}
     >
       {homeState.selectedNotesType === "all-notes" && (
-        <button className="w-xs rounded-sm bg-blue-600 py-2 text-white">
+        <button
+          className="w-xs rounded-sm bg-blue-600 py-2 text-white"
+          onClick={() => dispatch(setIsNoteBeingCreated())}
+        >
           Create New Note
         </button>
       )}
@@ -83,8 +87,8 @@ const NoteInfoCard = ({ note }: NoteInfoCardProps) => {
   const noteInfoCardRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (homeState.selectedNoteId === note.id) {
-      noteInfoCardRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (homeState.selectedNoteId === note.id && noteInfoCardRef.current) {
+      noteInfoCardRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [note.id, homeState.selectedNoteId]);
 

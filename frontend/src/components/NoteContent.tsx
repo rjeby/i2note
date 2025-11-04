@@ -14,6 +14,7 @@ import {
   setNoteIsArchived,
   deleteNote,
   cancelEditing,
+  createNote,
 } from "../slices/homeSlice";
 import type { TagCardProps } from "../types";
 import { formateISO8601Date } from "../utils";
@@ -112,6 +113,10 @@ const NoteContent = () => {
             onClick={() => {
               if (!homeState.isBeingEdited) {
                 dispatch(setIsBeingEdited(true));
+                return;
+              }
+              if (homeState.isNoteBeingCreated) {
+                dispatch(createNote());
                 return;
               }
               dispatch(updateNote());
