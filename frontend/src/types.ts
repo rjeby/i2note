@@ -12,7 +12,7 @@ export interface Tag {
   content: string;
 }
 
-export interface NoteTagAssociation {
+export interface NoteTag {
   noteId: number;
   tagId: number;
 }

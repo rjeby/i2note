@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
+import dataReducer from "./slices/dataSlice";
 import homeReducer from "./slices/homeSlice";
 
 export const store = configureStore({
   reducer: {
+    data: dataReducer,
     home: homeReducer,
   },
 });

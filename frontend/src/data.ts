@@ -1,105 +1,4 @@
-import type { Note } from "./types";
-
-export const noteTags = [
-  { id: 1, content: "work" },
-  { id: 2, content: "personal" },
-  { id: 3, content: "shopping" },
-  { id: 4, content: "health" },
-  { id: 5, content: "study" },
-  { id: 6, content: "ideas" },
-  { id: 7, content: "travel" },
-  { id: 8, content: "food" },
-  { id: 9, content: "productivity" },
-  { id: 10, content: "finance" },
-  { id: 11, content: "tech" },
-  { id: 12, content: "books" },
-  { id: 13, content: "fitness" },
-  { id: 14, content: "goals" },
-  { id: 15, content: "projects" },
-  { id: 16, content: "recipes" },
-  { id: 17, content: "self-improvement" },
-  { id: 18, content: "planning" },
-  { id: 19, content: "meditation" },
-  { id: 20, content: "coding" }
-];
-
-export const noteTagAssociations = [
-  { noteId: 1, tagId: 1 },  // Meeting with Client - work
-  { noteId: 1, tagId: 15 }, // Meeting with Client - projects
-  { noteId: 1, tagId: 18 }, // Meeting with Client - planning
-  
-  { noteId: 2, tagId: 3 },  // Grocery List - shopping
-  { noteId: 2, tagId: 8 },  // Grocery List - food
-  
-  { noteId: 3, tagId: 4 },  // Workout Plan - health
-  { noteId: 3, tagId: 13 }, // Workout Plan - fitness
-  { noteId: 3, tagId: 18 }, // Workout Plan - planning
-  
-  { noteId: 4, tagId: 6 },  // Book Ideas - ideas
-  { noteId: 4, tagId: 12 }, // Book Ideas - books
-  { noteId: 4, tagId: 11 }, // Book Ideas - tech
-  
-  { noteId: 5, tagId: 8 },  // Recipe - food
-  { noteId: 5, tagId: 16 }, // Recipe - recipes
-  
-  { noteId: 6, tagId: 10 }, // Budget Planning - finance
-  { noteId: 6, tagId: 18 }, // Budget Planning - planning
-  { noteId: 6, tagId: 2 },  // Budget Planning - personal
-  
-  { noteId: 7, tagId: 1 },  // Conference Notes - work
-  { noteId: 7, tagId: 11 }, // Conference Notes - tech
-  { noteId: 7, tagId: 5 },  // Conference Notes - study
-  
-  { noteId: 8, tagId: 7 },  // Vacation Plan - travel
-  { noteId: 8, tagId: 18 }, // Vacation Plan - planning
-  { noteId: 8, tagId: 2 },  // Vacation Plan - personal
-  
-  { noteId: 9, tagId: 5 },  // Learning Goals - study
-  { noteId: 9, tagId: 14 }, // Learning Goals - goals
-  { noteId: 9, tagId: 20 }, // Learning Goals - coding
-  
-  { noteId: 10, tagId: 1 }, // Project Tasks - work
-  { noteId: 10, tagId: 15 }, // Project Tasks - projects
-  { noteId: 10, tagId: 20 }, // Project Tasks - coding
-  
-  { noteId: 11, tagId: 2 },  // Birthday Gift Ideas - personal
-  { noteId: 11, tagId: 3 },  // Birthday Gift Ideas - shopping
-  
-  { noteId: 12, tagId: 5 },  // Study Notes - study
-  { noteId: 12, tagId: 20 }, // Study Notes - coding
-  { noteId: 12, tagId: 11 }, // Study Notes - tech
-  
-  { noteId: 13, tagId: 9 },  // Todo Weekend - productivity
-  { noteId: 13, tagId: 2 },  // Todo Weekend - personal
-  { noteId: 13, tagId: 12 }, // Todo Weekend - books
-  
-  { noteId: 14, tagId: 17 }, // Quote Collection - self-improvement
-  { noteId: 14, tagId: 6 },  // Quote Collection - ideas
-  
-  { noteId: 15, tagId: 11 }, // App Feature Ideas - tech
-  { noteId: 15, tagId: 6 },  // App Feature Ideas - ideas
-  { noteId: 15, tagId: 15 }, // App Feature Ideas - projects
-  
-  { noteId: 16, tagId: 7 },  // Travel Checklist - travel
-  { noteId: 16, tagId: 18 }, // Travel Checklist - planning
-  
-  { noteId: 17, tagId: 1 },  // Work Notes - work
-  { noteId: 17, tagId: 15 }, // Work Notes - projects
-  { noteId: 17, tagId: 9 },  // Work Notes - productivity
-  
-  { noteId: 18, tagId: 19 }, // Meditation Journal - meditation
-  { noteId: 18, tagId: 17 }, // Meditation Journal - self-improvement
-  { noteId: 18, tagId: 4 },  // Meditation Journal - health
-  
-  { noteId: 19, tagId: 3 },  // Shopping List - shopping
-  { noteId: 19, tagId: 2 },  // Shopping List - personal
-  
-  { noteId: 20, tagId: 14 }, // Future Goals - goals
-  { noteId: 20, tagId: 17 }, // Future Goals - self-improvement
-  { noteId: 20, tagId: 20 }  // Future Goals - coding
-];
-
-export const notes: Note[] = [
+export const notes = [
   {
     id: 1,
     title: "Meeting with Client",
@@ -119,8 +18,7 @@ export const notes: Note[] = [
   {
     id: 3,
     title: "Workout Plan",
-    content:
-      "Monday - Chest, Tuesday - Back, Wednesday - Legs, Thursday - Arms, Friday - Cardio",
+    content: "Monday - Chest, Tuesday - Back, Wednesday - Legs, Thursday - Arms, Friday - Cardio",
     createdAt: "2025-09-15T06:00:00Z",
     editedAt: "2025-09-15T06:05:00Z",
     isArchived: false,
@@ -261,4 +159,84 @@ export const notes: Note[] = [
     editedAt: "2025-10-05T18:15:00Z",
     isArchived: false,
   },
+];
+
+export const tags = [
+  { id: 1, content: "work" },
+  { id: 2, content: "personal" },
+  { id: 3, content: "shopping" },
+  { id: 4, content: "health" },
+  { id: 5, content: "study" },
+  { id: 6, content: "ideas" },
+  { id: 7, content: "travel" },
+  { id: 8, content: "food" },
+  { id: 9, content: "productivity" },
+  { id: 10, content: "finance" },
+  { id: 11, content: "tech" },
+  { id: 12, content: "books" },
+  { id: 13, content: "fitness" },
+  { id: 14, content: "goals" },
+  { id: 15, content: "projects" },
+  { id: 16, content: "recipes" },
+  { id: 17, content: "self-improvement" },
+  { id: 18, content: "planning" },
+  { id: 19, content: "meditation" },
+  { id: 20, content: "coding" },
+];
+
+export const noteTags = [
+  { noteId: 1, tagId: 1 },
+  { noteId: 1, tagId: 15 },
+  { noteId: 1, tagId: 18 },
+  { noteId: 2, tagId: 3 },
+  { noteId: 2, tagId: 8 },
+  { noteId: 3, tagId: 4 },
+  { noteId: 3, tagId: 13 },
+  { noteId: 3, tagId: 18 },
+  { noteId: 4, tagId: 6 },
+  { noteId: 4, tagId: 12 },
+  { noteId: 4, tagId: 11 },
+  { noteId: 5, tagId: 8 },
+  { noteId: 5, tagId: 16 },
+  { noteId: 6, tagId: 10 },
+  { noteId: 6, tagId: 18 },
+  { noteId: 6, tagId: 2 },
+  { noteId: 7, tagId: 1 },
+  { noteId: 7, tagId: 11 },
+  { noteId: 7, tagId: 5 },
+  { noteId: 8, tagId: 7 },
+  { noteId: 8, tagId: 18 },
+  { noteId: 8, tagId: 2 },
+  { noteId: 9, tagId: 5 },
+  { noteId: 9, tagId: 14 },
+  { noteId: 9, tagId: 20 },
+  { noteId: 10, tagId: 1 },
+  { noteId: 10, tagId: 15 },
+  { noteId: 10, tagId: 20 },
+  { noteId: 11, tagId: 2 },
+  { noteId: 11, tagId: 3 },
+  { noteId: 12, tagId: 5 },
+  { noteId: 12, tagId: 20 },
+  { noteId: 12, tagId: 11 },
+  { noteId: 13, tagId: 9 },
+  { noteId: 13, tagId: 2 },
+  { noteId: 13, tagId: 12 },
+  { noteId: 14, tagId: 17 },
+  { noteId: 14, tagId: 6 },
+  { noteId: 15, tagId: 11 },
+  { noteId: 15, tagId: 6 },
+  { noteId: 15, tagId: 15 },
+  { noteId: 16, tagId: 7 },
+  { noteId: 16, tagId: 18 },
+  { noteId: 17, tagId: 1 },
+  { noteId: 17, tagId: 15 },
+  { noteId: 17, tagId: 9 },
+  { noteId: 18, tagId: 19 },
+  { noteId: 18, tagId: 17 },
+  { noteId: 18, tagId: 4 },
+  { noteId: 19, tagId: 3 },
+  { noteId: 19, tagId: 2 },
+  { noteId: 20, tagId: 14 },
+  { noteId: 20, tagId: 17 },
+  { noteId: 20, tagId: 20 },
 ];

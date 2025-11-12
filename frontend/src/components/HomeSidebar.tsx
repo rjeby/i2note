@@ -1,32 +1,21 @@
+import type { ShowNotesProps, TagCardProps } from "../types";
+
 import logo from "../assets/favicon.svg";
 import iconHome from "../assets/icon-home.svg";
 import iconArchive from "../assets/icon-archive.svg";
 import iconChevronRight from "../assets/icon-chevron-right.svg";
 import iconTag from "../assets/icon-tag.svg";
 
+import type { RootState } from "../store";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { setSelectedNotesType, setSlectedTagId } from "../slices/homeSlice";
-import type { ShowNotesProps, TagCardProps } from "../types";
+import { selectTagsForFilteredNotesByArchivingStatus } from "../slices/dataSlice";
+import { selectSelectedNoteType, selectSelectedTagId, setSelectedNoteType } from "../slices/homeSlice";
+import { setSelectedTagId } from "../slices/homeSlice";
 
 const HomeSidebar = () => {
   const dispatch = useAppDispatch();
-  const homeState = useAppSelector((state) => state.home);
-  const notesSetIds = new Set(
-    homeState.notes
-      .filter((note) =>
-        homeState.selectedNotesType === "all-notes"
-          ? !note.isArchived
-          : note.isArchived,
-      )
-      .map((note) => note.id),
-  );
-  const tagsSetIds = new Set(
-    homeState.noteTagAssociations
-      .filter((association) => notesSetIds.has(association.noteId))
-      .map((association) => association.tagId),
-  );
-  const noteTags = homeState.noteTags.filter((tag) => tagsSetIds.has(tag.id));
-  const hasTags = noteTags.length !== 0;
+  const selectedTagId = useAppSelector(selectSelectedTagId);
+  const tags = useAppSelector((state: RootState) => selectTagsForFilteredNotesByArchivingStatus(state));
   return (
     <div className="flex w-xs flex-col border-r border-r-gray-300 px-4 py-8">
       <div className="flex flex-col">
@@ -41,17 +30,16 @@ const HomeSidebar = () => {
       </div>
       <div className="flex flex-1 flex-col gap-4 overflow-scroll pt-2 pl-2">
         <span className="text-sm text-gray-500">Tags</span>
-        {hasTags ? (
+        {tags.length !== 0 ? (
           <ul className="flex flex-1 flex-col gap-2 overflow-scroll pr-4">
-            {noteTags.map((tag) => (
+            {tags.map((tag) => (
               <li
                 key={tag.id}
                 className="rounded-sm px-2 py-2 hover:scale-105"
                 style={{
-                  background:
-                    homeState.selectedTagId === tag.id ? "#f3f4f6" : "",
+                  background: selectedTagId === tag.id ? "#f3f4f6" : "",
                 }}
-                onClick={() => dispatch(setSlectedTagId(tag.id))}
+                onClick={() => dispatch(setSelectedTagId(tag.id))}
               >
                 <TagCard tag={tag.content} />
               </li>
@@ -60,9 +48,7 @@ const HomeSidebar = () => {
         ) : (
           <p className="flex flex-col gap-2 rounded-sm bg-gray-200 px-2 py-2">
             <span>No Tags yet.</span>
-            <span className="text-sm font-bold italic">
-              Add tags to organize your notes!
-            </span>
+            <span className="text-sm font-bold italic">Add tags to organize your notes!</span>
           </p>
         )}
       </div>
@@ -71,18 +57,16 @@ const HomeSidebar = () => {
 };
 
 const ShowNotes = ({ type }: ShowNotesProps) => {
-  const selectedNotesType = useAppSelector(
-    (state) => state.home.selectedNotesType,
-  );
   const dispatch = useAppDispatch();
-  const isNotesTypeSelected = selectedNotesType === type;
+  const selectedNoteType = useAppSelector(selectSelectedNoteType);
+  const isNoteTypeSelected = selectedNoteType === type;
 
   return (
     <button
       type="button"
       className="flex items-center justify-between rounded-sm px-2 py-2 hover:bg-gray-100"
-      style={{background: isNotesTypeSelected ? "#f3f4f6" : ""}}
-      onClick={() => dispatch(setSelectedNotesType(type))}
+      style={{ background: isNoteTypeSelected ? "#f3f4f6" : "" }}
+      onClick={() => dispatch(setSelectedNoteType(type))}
     >
       <div className="flex items-center gap-4">
         <img
@@ -91,9 +75,7 @@ const ShowNotes = ({ type }: ShowNotesProps) => {
         />
         <span>{type === "all-notes" ? "All Notes" : "Archived Notes"}</span>
       </div>
-      {isNotesTypeSelected && (
-        <img src={iconChevronRight} alt="Right Chevron Icon" />
-      )}
+      {isNoteTypeSelected && <img src={iconChevronRight} alt="Right Chevron Icon" />}
     </button>
   );
 };
