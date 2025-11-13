@@ -1,6 +1,6 @@
 import type { TagCardProps } from "../types";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { formateISO8601Date } from "../utils";
 import { addNote, deleteNote, selectSelectedNote, setNoteArchivingStatus, updateNote } from "../slices/dataSlice";
@@ -16,22 +16,29 @@ const NoteContent = () => {
   const dispatch = useAppDispatch();
   const tags = useAppSelector(selectTagsForSelectedNote);
   const isNoteBeingCreated = useAppSelector(selectIsNoteBeingCreated);
-  const selectedNote = useAppSelector(selectSelectedNote);
-  const note = selectedNote
-    ? selectedNote
-    : { id: -1, title: "", content: "", editedAt: "", createdAt: "", isArchived: false };
+  const note = useAppSelector(selectSelectedNote);
   const [isNoteBeingEdited, setIsNoteBeingEdited] = useState(false);
-  const [title, setTitle] = useState(note?.title ?? "");
-  const [content, setContent] = useState(note?.content ?? "");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [tag, setTag] = useState("");
-  const [tempTags, setTempTags] = useState<string[]>(tags.map((value) => value.content));
+  const [tempTags, setTempTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title);
+      setContent(note.content);
+      setTempTags(tags.map((value) => value.content));
+    }
+  }, [note, tags]);
 
   const handleAddTag = (tag: string) => {
     setTempTags((tg) => (tg.includes(tag) ? tg : [...tg, tag]));
+    setTag(() => "");
   };
 
   const handleRemoveTag = (tag: string) => {
     setTempTags((tg) => tg.filter((value) => value !== tag));
+    setTag(() => "");
   };
 
   const handleEditNote = () => {
@@ -46,8 +53,8 @@ const NoteContent = () => {
       setIsNoteBeingEdited(() => false);
     }
 
-    setTitle(() => note?.title ?? "");
-    setContent(() => note?.content ?? "");
+    setTitle(() => (note ? note.title : ""));
+    setContent(() => (note ? note.content : ""));
     setTag(() => "");
   };
 
@@ -65,7 +72,7 @@ const NoteContent = () => {
           className="resize-none text-2xl font-bold focus:outline-none"
         />
         <div className="flex flex-col gap-3">
-          {isNoteBeingEdited && (
+          {(isNoteBeingEdited || isNoteBeingCreated) && (
             <div className="flex items-center gap-4">
               <input
                 type="text"
@@ -108,7 +115,7 @@ const NoteContent = () => {
               <span>----------------</span>
             )}
           </div>
-          {isNoteBeingEdited && (
+          {note && isNoteBeingEdited && (
             <div className="flex flex-row gap-4">
               <div className="flex w-40 items-center gap-2">
                 <img src={iconClock} alt="Clock Icon" />
@@ -146,9 +153,10 @@ const NoteContent = () => {
               };
               if (isNoteBeingCreated) {
                 dispatch(addNote(noteInfo));
-                return;
               }
-              dispatch(updateNote({ id: note.id, ...noteInfo }));
+              if (note && isNoteBeingEdited) {
+                dispatch(updateNote({ id: note.id, ...noteInfo }));
+              }
               handleCancelEdit();
             }}
           >
@@ -162,13 +170,13 @@ const NoteContent = () => {
           )}
         </div>
 
-        {!isNoteBeingEdited && (
+        {note && !isNoteBeingEdited && (
           <div className="flex gap-4">
             <button
               type="button"
               className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
               onClick={() => {
-                dispatch(setNoteArchivingStatus({ id: note.id, isArchived: true }));
+                dispatch(setNoteArchivingStatus({ id: note.id, isArchived: !note.isArchived }));
               }}
             >
               <img src={iconArchive} alt="Archive Icon" />

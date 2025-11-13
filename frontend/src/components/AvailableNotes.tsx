@@ -5,7 +5,12 @@ import { useAppDispatch, useAppSelector } from "../hooks";
 import { formateISO8601Date } from "../utils";
 import { selectAvailableNotes, selectTagsByNoteId } from "../slices/dataSlice";
 
-import { selectSelectedNoteId, selectSelectedNoteType, setIsNoteBeingCreated, setSelectedNoteId } from "../slices/homeSlice";
+import {
+  selectSelectedNoteId,
+  selectSelectedNoteType,
+  setIsNoteBeingCreated,
+  setSelectedNoteId,
+} from "../slices/homeSlice";
 
 const AvailableNotes = () => {
   const dispatch = useAppDispatch();

@@ -100,7 +100,7 @@ export const dataSlice = createSlice({
       return {
         ...state,
         notes: state.notes.filter((value) => value.id !== id),
-        noteTags: state.noteTags.filter((value) => value.noteId === id),
+        noteTags: state.noteTags.filter((value) => value.noteId !== id),
       };
     },
     setNoteArchivingStatus: (

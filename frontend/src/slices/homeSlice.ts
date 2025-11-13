@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import type { NoteType } from "../types";
-import { addNote } from "./dataSlice";
+import { addNote, deleteNote, setNoteArchivingStatus, updateNote } from "./dataSlice";
 
 interface homeState {
   selectedNoteId: number;
@@ -27,42 +27,61 @@ const homeSlice = createSlice({
       return {
         ...state,
         selectedNoteId: action.payload,
+        selectedTagId: -1,
+        filterByTitle: "",
       };
     },
     setSelectedTagId: (state, action: PayloadAction<number>) => {
       return {
         ...state,
+        selectedNoteId: -1,
         selectedTagId: action.payload,
+        filterByTitle: "",
       };
     },
     setSelectedNoteType: (state, action: PayloadAction<NoteType>) => {
       return {
         ...state,
+        selectedNoteId: -1,
+        selectedTagId: -1,
+        filterByTitle: "",
         selectedNoteType: action.payload,
       };
     },
     setFilterByTitle: (state, action: PayloadAction<string>) => {
       return {
         ...state,
+        selectedNoteId: -1,
+        selectedTagId: -1,
         filterByTitle: action.payload,
       };
     },
     setIsNoteBeingCreated: (state, action: PayloadAction<boolean>) => {
       return {
         ...state,
+        selectedNoteId: -1,
+        selectedTagId: -1,
+        filterByTitle: "",
         isNoteBeingCreated: action.payload,
       };
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(addNote, (state) => {
-      return {
-        ...state,
-        selectedNoteId: -1,
-      };
-    });
+    builder
+      .addCase(deleteNote, resetSelection)
+      .addCase(addNote, resetSelection)
+      .addCase(updateNote, resetSelection)
+      .addCase(setNoteArchivingStatus, resetSelection);
   },
 });
+
+const resetSelection = (state: homeState) => {
+  return {
+    ...state,
+    selectedTagId: -1,
+    selectedNoteId: -1,
+  };
+};
 
 export const selectFilterByTitle = (state: RootState) => state.home.filterByTitle;
 export const selectSelectedNoteId = (state: RootState) => state.home.selectedNoteId;
