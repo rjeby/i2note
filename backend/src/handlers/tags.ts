@@ -13,7 +13,7 @@ export const createTag = async (req: Request<{}, {}, { content: string }>, res: 
   return res.status(201).json(tag);
 };
 
-export const isTagPresent = async (req: Request, res: Response<{}, { id: number; tag: Tag }>, next: NextFunction) => {
+export const isTagPresentById = async (req: Request, res: Response<{}, { id: number; tag: Tag }>, next: NextFunction) => {
   const { id } = res.locals;
   const tag = await db.tag.findUnique({
     where: {
@@ -27,11 +27,17 @@ export const isTagPresent = async (req: Request, res: Response<{}, { id: number;
   next();
 };
 
-export const isContentValid = async (req: Request<{}, {}, { content: string }>, res: Response, next: NextFunction) => {
+export const isTagPayloadValid = (req: Request<{}, {}, { content: string }>, res: Response, next: NextFunction) => {
   const { content } = req.body;
-  if (!content.length) {
-    return res.status(400).json({ message: "Invalid content" });
+  if (!content || !content.length) {
+    return res.status(400).json({ message: "Invalid Tag content" });
   }
+  res.locals.content = content;
+  next();
+};
+
+export const isTagPresentByContent = async (req: Request, res: Response<{}, { content: string }>, next: NextFunction) => {
+  const { content } = res.locals;
   const tag = await db.tag.findUnique({
     where: {
       content: content,
