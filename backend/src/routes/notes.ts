@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { createNote, getAllNotes } from "../handlers/notes.ts";
+import { createNote, deleteNote, getAllNotes, getNoteById, isIdValid, updateNote } from "../handlers/notes.ts";
 
 const router = Router();
 
 router.get("/", getAllNotes);
 router.post("/", createNote);
-// router.put("/:id");
-// router.delete("/:id");
+router.get("/:id", isIdValid, getNoteById);
+router.put("/:id", isIdValid, updateNote);
+router.delete("/:id", isIdValid, deleteNote);
 
 export default router;
