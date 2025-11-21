@@ -8,7 +8,7 @@ interface NoteCreationPayload {
 }
 
 export const isNoteCreationPayloadValid = (req: Request<{}, {}, NoteCreationPayload>, res: Response<{}, NoteCreationPayload>, next: NextFunction) => {
-  const { title, content, tags } = { title: req.body.title.trim(), content: req.body.content, tags: req.body.tags };
+  const { title, content, tags } = { title: req.body.title, content: req.body.content, tags: req.body.tags };
   if (!title || typeof title !== "string" || !title.trim().length) {
     return res.status(400).json({ message: "Invalid Note Title" });
   }
@@ -26,7 +26,7 @@ export const isNoteCreationPayloadValid = (req: Request<{}, {}, NoteCreationPayl
       return res.status(400).json({ message: `${index + 1}th Tag is not Valid` });
     }
   }
-  res.locals.title = title;
+  res.locals.title = title.trim();
   res.locals.content = content;
   res.locals.tags = tags;
   next();
