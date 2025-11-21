@@ -1,13 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 import db from "../db.ts";
 
-interface NoteCreationPayload {
+interface NotePayload {
   title: string;
   content: string;
   tags: string[];
 }
 
-export const isNoteCreationPayloadValid = (req: Request<{}, {}, NoteCreationPayload>, res: Response<{}, NoteCreationPayload>, next: NextFunction) => {
+export const isNotePayloadValid = (req: Request<{}, {}, NotePayload>, res: Response<{}, NotePayload>, next: NextFunction) => {
   const { title, content, tags } = { title: req.body.title, content: req.body.content, tags: req.body.tags };
   if (!title || typeof title !== "string" || !title.trim().length) {
     return res.status(400).json({ message: "Invalid Note Title" });
@@ -32,7 +32,22 @@ export const isNoteCreationPayloadValid = (req: Request<{}, {}, NoteCreationPayl
   next();
 };
 
-export const createNote = async (req: Request, res: Response<{}, NoteCreationPayload>) => {
+export const isNotePresent = async (req: Request, res: Response<{}, { id: number }>, next: NextFunction) => {
+  const { id } = res.locals;
+  const note = await db.note.findUnique({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!note) {
+    return res.status(404).json({ message: "Note is not Found" });
+  }
+
+  next();
+};
+
+export const createNote = async (req: Request, res: Response<{}, NotePayload>) => {
   const { title, content, tags } = res.locals;
   const note = await db.note.create({
     data: {
@@ -48,4 +63,64 @@ export const createNote = async (req: Request, res: Response<{}, NoteCreationPay
   });
 
   return res.status(201).json(note);
+};
+
+export const updateNote = async (req: Request, res: Response<{}, NotePayload & { id: number }>) => {
+  const { id, title, content, tags } = res.locals;
+  const note = await db.note.update({
+    where: {
+      id: id,
+    },
+    data: {
+      title: title,
+      content: content,
+      tags: {
+        connectOrCreate: tags.map((value) => ({ where: { content: value }, create: { content: value } })),
+      },
+    },
+    include: {
+      tags: true,
+    },
+  });
+
+  return res.status(200).json(note);
+};
+
+export const archiveNote = async (req: Request, res: Response<{}, { id: number }>) => {
+  const { id } = res.locals;
+  const note = await db.note.update({
+    where: {
+      id: id,
+    },
+    data: {
+      isArchived: true,
+    },
+  });
+
+  return res.status(200).json(note);
+};
+
+export const unarchiveNote = async (req: Request, res: Response<{}, { id: number }>) => {
+  const { id } = res.locals;
+  const note = await db.note.update({
+    where: {
+      id: id,
+    },
+    data: {
+      isArchived: false,
+    },
+  });
+
+  return res.status(200).json(note);
+};
+
+export const deleteNote = async (req: Request, res: Response<{}, { id: number }>) => {
+  const { id } = res.locals;
+  const note = await db.note.delete({
+    where: {
+      id: id,
+    },
+  });
+
+  return res.status(200).json(note);
 };
