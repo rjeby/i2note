@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { isIdValid } from "../handlers/common.ts";
-import { archiveNote, createNote, deleteNote, isNotePayloadValid, isNotePresent, unarchiveNote, updateNote } from "../handlers/notes.ts";
+import { archiveNote, createNote, deleteNote, getAllNotes, isNotePayloadValid, isNotePresent, unarchiveNote, updateNote } from "../handlers/notes.ts";
 
 const router = Router();
 
+router.get("/", getAllNotes);
 router.post("/", isNotePayloadValid, createNote);
 router.patch("/:id", isIdValid, isNotePayloadValid, isNotePresent, updateNote);
 router.put("/:id/archive", isIdValid, isNotePresent, archiveNote);

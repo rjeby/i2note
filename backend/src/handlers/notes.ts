@@ -7,6 +7,16 @@ interface NotePayload {
   tags: string[];
 }
 
+export const getAllNotes = async (req: Request, res: Response) => {
+  const notes = await db.note.findMany({
+    include: {
+      tags: true,
+    },
+  });
+
+  return res.status(200).json(notes);
+};
+
 export const isNotePayloadValid = (req: Request<{}, {}, NotePayload>, res: Response<{}, NotePayload>, next: NextFunction) => {
   const { title, content, tags } = { title: req.body.title, content: req.body.content, tags: req.body.tags };
   if (!title || typeof title !== "string" || !title.trim().length) {
@@ -121,6 +131,5 @@ export const deleteNote = async (req: Request, res: Response<{}, { id: number }>
       id: id,
     },
   });
-
   return res.status(200).json(note);
 };
