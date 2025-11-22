@@ -1,60 +1,49 @@
 import type { Note, NoteTag, Tag } from "../types";
-import { notes, tags, noteTags } from "../data";
-import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { selectFilterByTitle, selectSelectedNoteId, selectSelectedNoteType, selectSelectedTagId } from "./homeSlice";
 
-type NotePayload = Omit<Note, "createdAt" | "editedAt"> & { tags: string[] };
+const baseURI = "http://localhost:3000";
+
+type NoteCreationPayload = Omit<Note, "id" | "createdAt" | "tags"> & {
+  tags: string[];
+};
+type NoteCreationResponse = Note & { tags: Tag[] };
+type ResponseError = { message: string };
+
+type NotePayload = Note & { tags: string[] };
 
 interface DataState {
   notes: Note[];
   tags: Tag[];
   noteTags: NoteTag[];
+  addNoteRequest: {
+    status: "idle" | "pending" | "succeeded" | "failed";
+    error: string | null;
+  };
+  deleteNoteRequest: {
+    status: "idle" | "pending" | "succeeded" | "failed";
+    error: string | null;
+  };
 }
 
 const initialState: DataState = {
-  notes: notes,
-  tags: tags,
-  noteTags: noteTags,
+  notes: [],
+  tags: [],
+  noteTags: [],
+  addNoteRequest: {
+    status: "idle",
+    error: null,
+  },
+  deleteNoteRequest: {
+    status: "idle",
+    error: "null",
+  },
 };
 export const dataSlice = createSlice({
   name: "data",
   initialState,
   reducers: {
-    addNote: (state, action: PayloadAction<Omit<NotePayload, "id">>) => {
-      const { notes, tags, noteTags } = state;
-      const { title, content, tags: newTags } = action.payload;
-      const date = new Date().toISOString();
-
-      const nextNoteId = notes.length ? Math.max(...notes.map((value) => value.id)) + 1 : 1;
-      let nextTagId = tags.length ? Math.max(...tags.map((value) => value.id)) + 1 : 1;
-
-      const updatedNotes = [
-        ...notes,
-        { id: nextNoteId, title, content, isArchived: false, editedAt: date, createdAt: date },
-      ];
-      const updatedTags = [...tags];
-      const updatedNoteTags = [...noteTags];
-
-      const tagIdByContent = new Map(tags.map((value) => [value.content, value.id]));
-
-      for (const tagContent of newTags) {
-        const tagId = tagIdByContent.has(content) ? tagIdByContent.get(content) : nextTagId;
-
-        if (!tagIdByContent.has(content)) {
-          updatedTags.push({ id: tagId!, content: tagContent });
-          nextTagId++;
-        }
-
-        updatedNoteTags.push({ noteId: nextNoteId, tagId: tagId! });
-      }
-
-      return {
-        notes: updatedNotes,
-        tags: updatedTags,
-        noteTags: updatedNoteTags,
-      };
-    },
     updateNote: (state, action: PayloadAction<NotePayload>) => {
       const { notes, tags, noteTags } = state;
       const { id, title, content, isArchived, tags: newTags } = action.payload;
@@ -69,7 +58,7 @@ export const dataSlice = createSlice({
               title: title,
               content: content,
               isArchived: isArchived,
-              editedAt: date,
+              updatedAt: date,
               createdAt: value.createdAt,
             }
           : value,
@@ -90,22 +79,15 @@ export const dataSlice = createSlice({
         updatedNoteTags.push({ noteId: id, tagId: tagId! });
       }
       return {
+        ...state,
         notes: updatedNotes,
         tags: updatedTags,
         noteTags: updatedNoteTags,
       };
     },
-    deleteNote: (state, action: PayloadAction<number>) => {
-      const id = action.payload;
-      return {
-        ...state,
-        notes: state.notes.filter((value) => value.id !== id),
-        noteTags: state.noteTags.filter((value) => value.noteId !== id),
-      };
-    },
     setNoteArchivingStatus: (
       state,
-      action: PayloadAction<Omit<Note, "createdAt" | "editedAt" | "title" | "content">>,
+      action: PayloadAction<Omit<Note, "createdAt" | "updatedAt" | "title" | "content">>,
     ) => {
       const { id, isArchived } = action.payload;
       return {
@@ -114,6 +96,94 @@ export const dataSlice = createSlice({
       };
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(addNote.fulfilled, (state, action) => {
+        const note = {
+          id: action.payload.id,
+          title: action.payload.title,
+          content: action.payload.content,
+          isArchived: action.payload.isArchived,
+          updatedAt: action.payload.updatedAt,
+          createdAt: action.payload.createdAt,
+        };
+        const tags = action.payload.tags;
+        const updatedNotes = [...state.notes, note];
+        const updatedTags = [...state.tags];
+        const updatedNoteTags = [...state.noteTags];
+        const currentTagIds = new Set(state.tags.map((value) => value.id));
+        for (const tag of tags) {
+          if (!currentTagIds.has(tag.id)) {
+            updatedTags.push(tag);
+          }
+          updatedNoteTags.push({ noteId: note.id, tagId: tag.id });
+        }
+        return {
+          ...state,
+          notes: updatedNotes,
+          tags: updatedTags,
+          noteTags: updatedNoteTags,
+          addNoteRequest: {
+            ...state.addNoteRequest,
+            status: "succeeded",
+          },
+        };
+      })
+      .addCase(addNote.pending, (state) => {
+        state.addNoteRequest.status = "pending";
+      })
+      .addCase(addNote.rejected, (state, action) => {
+        state.addNoteRequest.status = "failed";
+        state.addNoteRequest.error = action.error.message ?? "Unknown Error";
+      })
+      .addCase(deleteNote.fulfilled, (state, action) => {
+        const note = action.payload;
+        const updatedNotes = state.notes.filter((value) => value.id !== note.id);
+        const updatedNoteTags = state.noteTags.filter((value) => value.noteId !== note.id);
+        return {
+          ...state,
+          notes: updatedNotes,
+          noteTags: updatedNoteTags,
+        };
+      })
+      .addCase(deleteNote.pending, (state) => {
+        state.deleteNoteRequest.status = "pending";
+      })
+      .addCase(deleteNote.rejected, (state, action) => {
+        state.deleteNoteRequest.status = "failed";
+        state.deleteNoteRequest.error = action.error.message ?? "Unknow Error";
+      });
+  },
+});
+
+export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayload>("notes/addNote", async (payload) => {
+  const response = await fetch(`${baseURI}/api/notes`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw Error((data as ResponseError).message);
+  }
+  return data as NoteCreationResponse;
+});
+
+export const deleteNote = createAsyncThunk<Note, number>("notes/deleteNote", async (id) => {
+  const response = await fetch(`${baseURI}/api/notes/${id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error((data as ResponseError).message);
+  }
+
+  return data as Note;
 });
 
 export const selectNotes = (state: RootState) => state.data.notes;
@@ -170,6 +240,6 @@ export const selectTagsForFilteredNotesByArchivingStatus = createSelector(
   },
 );
 
-export const { addNote, updateNote, deleteNote, setNoteArchivingStatus } = dataSlice.actions;
+export const { updateNote, setNoteArchivingStatus } = dataSlice.actions;
 
 export default dataSlice.reducer;

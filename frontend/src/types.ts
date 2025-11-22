@@ -4,7 +4,7 @@ export interface Note {
   content: string;
   isArchived: boolean;
   createdAt: string;
-  editedAt: string;
+  updatedAt: string;
 }
 
 export interface Tag {

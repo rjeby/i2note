@@ -121,7 +121,7 @@ const NoteContent = () => {
                 <img src={iconClock} alt="Clock Icon" />
                 <span>Last Edited</span>
               </div>
-              <span>{formateISO8601Date(note.editedAt)}</span>
+              <span>{formateISO8601Date(note.updatedAt)}</span>
             </div>
           )}
         </div>

@@ -87,7 +87,7 @@ const NoteInfoCard = ({ note }: NoteInfoCardProps) => {
           </span>
         ))}
       </div>
-      <span className="text-left">{formateISO8601Date(note.editedAt)}</span>
+      <span className="text-left">{formateISO8601Date(note.updatedAt)}</span>
     </button>
   );
 };

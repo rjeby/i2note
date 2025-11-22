@@ -68,8 +68,8 @@ const homeSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(deleteNote, resetSelection)
-      .addCase(addNote, resetSelection)
+      .addCase(deleteNote.fulfilled, resetSelection)
+      .addCase(addNote.fulfilled, resetSelection)
       .addCase(updateNote, resetSelection)
       .addCase(setNoteArchivingStatus, resetSelection);
   },
