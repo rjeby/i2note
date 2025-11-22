@@ -3,7 +3,7 @@ import type { TagCardProps } from "../types";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { formateISO8601Date } from "../utils";
-import { addNote, deleteNote, selectSelectedNote, setNoteArchivingStatus, updateNote } from "../slices/dataSlice";
+import { addNote, deleteNote, selectSelectedNote, updateNote, archiveNote, unArchiveNote } from "../slices/dataSlice";
 import { selectIsNoteBeingCreated, setIsNoteBeingCreated } from "../slices/homeSlice";
 
 import iconTag from "../assets/icon-tag.svg";
@@ -24,11 +24,9 @@ const NoteContent = () => {
   const [tempTags, setTempTags] = useState<string[]>([]);
 
   useEffect(() => {
-    if (note) {
-      setTitle(note.title);
-      setContent(note.content);
-      setTempTags(tags.map((value) => value.content));
-    }
+      setTitle(note ? note.title : "");
+      setContent(note ? note.content : "");
+      setTempTags(note ? tags.map((value) => value.content) : []);
   }, [note, tags]);
 
   const handleAddTag = (tag: string) => {
@@ -64,7 +62,7 @@ const NoteContent = () => {
         <textarea
           name="title"
           id="title"
-          disabled={isNoteBeingEdited}
+          disabled={!isNoteBeingCreated && !isNoteBeingEdited}
           value={title}
           maxLength={70}
           placeholder="Title ..."
@@ -130,7 +128,7 @@ const NoteContent = () => {
         name="note"
         id="note"
         placeholder="Note ..."
-        disabled={isNoteBeingEdited}
+        disabled={!isNoteBeingCreated && !isNoteBeingEdited}
         value={content}
         className="flex-1 resize-none border-b border-b-gray-300 px-1 pt-6 focus:outline-none"
         onChange={(event) => setContent(event.target.value)}
@@ -148,7 +146,6 @@ const NoteContent = () => {
               const noteInfo = {
                 title: title,
                 content: content,
-                isArchived: false,
                 tags: tempTags,
               };
               if (isNoteBeingCreated) {
@@ -176,7 +173,11 @@ const NoteContent = () => {
               type="button"
               className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
               onClick={() => {
-                dispatch(setNoteArchivingStatus({ id: note.id, isArchived: !note.isArchived }));
+                if (!note.isArchived) {
+                  dispatch(archiveNote(note.id))
+                } else {
+                  dispatch(unArchiveNote(note.id))
+                }
               }}
             >
               <img src={iconArchive} alt="Archive Icon" />

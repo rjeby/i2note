@@ -1,30 +1,34 @@
 import type { Note, NoteTag, Tag } from "../types";
-import { createAsyncThunk, createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { selectFilterByTitle, selectSelectedNoteId, selectSelectedNoteType, selectSelectedTagId } from "./homeSlice";
 
 const baseURI = "http://localhost:3000";
 
-type NoteCreationPayload = Omit<Note, "id" | "createdAt" | "tags"> & {
+type NoteCreationPayload = Omit<Note, "id" | "createdAt" | "updatedAt" | "isArchived"> & {
+  tags: string[];
+};
+type NoteUpdatePayload = Omit<Note, "createdAt" | "updatedAt" | "isArchived"> & {
   tags: string[];
 };
 type NoteCreationResponse = Note & { tags: Tag[] };
+type NoteUpdateResponse = Note & { tags: Tag[] };
 type ResponseError = { message: string };
 
-type NotePayload = Note & { tags: string[] };
+interface RequestState {
+  status: "idle" | "pending" | "succeeded" | "failed";
+  error: string | null;
+}
 
 interface DataState {
   notes: Note[];
   tags: Tag[];
   noteTags: NoteTag[];
-  addNoteRequest: {
-    status: "idle" | "pending" | "succeeded" | "failed";
-    error: string | null;
-  };
-  deleteNoteRequest: {
-    status: "idle" | "pending" | "succeeded" | "failed";
-    error: string | null;
-  };
+  addNoteRequest: RequestState;
+  updateNoteRequest: RequestState;
+  deleteNoteRequest: RequestState;
+  archiveNoteRequest: RequestState;
+  unArchiveNoteRequest: RequestState;
 }
 
 const initialState: DataState = {
@@ -35,7 +39,19 @@ const initialState: DataState = {
     status: "idle",
     error: null,
   },
+  updateNoteRequest: {
+    status: "idle",
+    error: null,
+  },
   deleteNoteRequest: {
+    status: "idle",
+    error: "null",
+  },
+  archiveNoteRequest: {
+    status: "idle",
+    error: "null",
+  },
+  unArchiveNoteRequest: {
     status: "idle",
     error: "null",
   },
@@ -43,59 +59,7 @@ const initialState: DataState = {
 export const dataSlice = createSlice({
   name: "data",
   initialState,
-  reducers: {
-    updateNote: (state, action: PayloadAction<NotePayload>) => {
-      const { notes, tags, noteTags } = state;
-      const { id, title, content, isArchived, tags: newTags } = action.payload;
-      const date = new Date().toISOString();
-
-      let nextTagId = tags.length ? Math.max(...tags.map((value) => value.id)) + 1 : 1;
-
-      const updatedNotes = notes.map((value) =>
-        value.id === id
-          ? {
-              id: id,
-              title: title,
-              content: content,
-              isArchived: isArchived,
-              updatedAt: date,
-              createdAt: value.createdAt,
-            }
-          : value,
-      );
-      const updatedTags = [...tags];
-      const updatedNoteTags = noteTags.filter((value) => value.noteId === id);
-
-      const tagIdByContent = new Map(tags.map((value) => [value.content, value.id]));
-
-      for (const tagContent of newTags) {
-        const tagId = tagIdByContent.has(content) ? tagIdByContent.get(content) : nextTagId;
-
-        if (!tagIdByContent.has(content)) {
-          updatedTags.push({ id: tagId!, content: tagContent });
-          nextTagId++;
-        }
-
-        updatedNoteTags.push({ noteId: id, tagId: tagId! });
-      }
-      return {
-        ...state,
-        notes: updatedNotes,
-        tags: updatedTags,
-        noteTags: updatedNoteTags,
-      };
-    },
-    setNoteArchivingStatus: (
-      state,
-      action: PayloadAction<Omit<Note, "createdAt" | "updatedAt" | "title" | "content">>,
-    ) => {
-      const { id, isArchived } = action.payload;
-      return {
-        ...state,
-        notes: state.notes.map((value) => (value.id === id ? { ...value, isArchived: isArchived } : value)),
-      };
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(addNote.fulfilled, (state, action) => {
@@ -144,6 +108,10 @@ export const dataSlice = createSlice({
           ...state,
           notes: updatedNotes,
           noteTags: updatedNoteTags,
+          deleteNoteRequest: {
+            ...state.deleteNoteRequest,
+            status: "succeeded",
+          },
         };
       })
       .addCase(deleteNote.pending, (state) => {
@@ -151,7 +119,83 @@ export const dataSlice = createSlice({
       })
       .addCase(deleteNote.rejected, (state, action) => {
         state.deleteNoteRequest.status = "failed";
-        state.deleteNoteRequest.error = action.error.message ?? "Unknow Error";
+        state.deleteNoteRequest.error = action.error.message ?? "Unknown Error";
+      })
+      .addCase(archiveNote.fulfilled, (state, action) => {
+        const note = action.payload;
+        const updatedNotes = state.notes.map((value) => (value.id !== note.id ? value : note));
+        return {
+          ...state,
+          notes: updatedNotes,
+          archiveNoteRequest: {
+            ...state.addNoteRequest,
+            status: "succeeded",
+          },
+        };
+      })
+      .addCase(archiveNote.pending, (state) => {
+        state.archiveNoteRequest.status = "pending";
+      })
+      .addCase(archiveNote.rejected, (state, action) => {
+        state.archiveNoteRequest.status = "failed";
+        state.archiveNoteRequest.error = action.error.message ?? "Unknown Error";
+      })
+      .addCase(unArchiveNote.fulfilled, (state, action) => {
+        const note = action.payload;
+        const updatedNotes = state.notes.map((value) => (value.id !== note.id ? value : note));
+        return {
+          ...state,
+          notes: updatedNotes,
+          unArchiveNoteRequest: {
+            ...state.unArchiveNoteRequest,
+            status: "succeeded",
+          },
+        };
+      })
+      .addCase(unArchiveNote.pending, (state) => {
+        state.unArchiveNoteRequest.status = "pending";
+      })
+      .addCase(unArchiveNote.rejected, (state, action) => {
+        state.unArchiveNoteRequest.status = "failed";
+        state.unArchiveNoteRequest.error = action.error.message ?? "Unknown Error";
+      })
+      .addCase(updateNote.fulfilled, (state, action) => {
+        const note = {
+          id: action.payload.id,
+          title: action.payload.title,
+          content: action.payload.content,
+          isArchived: action.payload.isArchived,
+          updatedAt: action.payload.updatedAt,
+          createdAt: action.payload.createdAt,
+        };
+        const tags = action.payload.tags;
+        const updatedNotes = state.notes.map((value) => (value.id !== note.id ? value : note));
+        const updatedTags = [...state.tags];
+        const updatedNoteTags = state.noteTags.filter((value) => value.noteId !== note.id);
+        const currentTagIds = new Set(state.tags.map((value) => value.id));
+        for (const tag of tags) {
+          if (!currentTagIds.has(tag.id)) {
+            updatedTags.push(tag);
+          }
+          updatedNoteTags.push({ noteId: note.id, tagId: tag.id });
+        }
+        return {
+          ...state,
+          notes: updatedNotes,
+          tags: updatedTags,
+          noteTags: updatedNoteTags,
+          updateNoteRequest: {
+            ...state.updateNoteRequest,
+            status: "succeeded",
+          },
+        };
+      })
+      .addCase(updateNote.pending, (state) => {
+        state.unArchiveNoteRequest.status = "pending";
+      })
+      .addCase(updateNote.rejected, (state, action) => {
+        state.unArchiveNoteRequest.status = "failed";
+        state.unArchiveNoteRequest.error = action.error.message ?? "Unknown Error";
       });
   },
 });
@@ -166,7 +210,7 @@ export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayloa
   });
   const data = await response.json();
   if (!response.ok) {
-    throw Error((data as ResponseError).message);
+    throw new Error((data as ResponseError).message);
   }
   return data as NoteCreationResponse;
 });
@@ -174,7 +218,6 @@ export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayloa
 export const deleteNote = createAsyncThunk<Note, number>("notes/deleteNote", async (id) => {
   const response = await fetch(`${baseURI}/api/notes/${id}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
   });
 
   const data = await response.json();
@@ -185,6 +228,48 @@ export const deleteNote = createAsyncThunk<Note, number>("notes/deleteNote", asy
 
   return data as Note;
 });
+
+export const archiveNote = createAsyncThunk<Note, number>("data/archiveNote", async (id) => {
+  const response = await fetch(`${baseURI}/api/notes/${id}/archive`, {
+    method: "PUT",
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error((data as ResponseError).message);
+  }
+  return data;
+});
+
+export const unArchiveNote = createAsyncThunk<Note, number>("data/unArchiveNote", async (id) => {
+  const response = await fetch(`${baseURI}/api/notes/${id}/unarchive`, {
+    method: "PUT",
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error((data as ResponseError).message);
+  }
+  return data;
+});
+
+export const updateNote = createAsyncThunk<NoteUpdateResponse, NoteUpdatePayload>(
+  "data/updateNote",
+  async (payload) => {
+    const response = await fetch(`${baseURI}/api/notes/${payload.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error((data as ResponseError).message);
+    }
+    return data as NoteUpdateResponse;
+  },
+);
 
 export const selectNotes = (state: RootState) => state.data.notes;
 export const selectNotesById = (state: RootState, id: number) => state.data.notes.find((value) => value.id === id);
@@ -239,7 +324,5 @@ export const selectTagsForFilteredNotesByArchivingStatus = createSelector(
     return tags.filter((value) => tagIds.has(value.id));
   },
 );
-
-export const { updateNote, setNoteArchivingStatus } = dataSlice.actions;
 
 export default dataSlice.reducer;

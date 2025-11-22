@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import type { NoteType } from "../types";
-import { addNote, deleteNote, setNoteArchivingStatus, updateNote } from "./dataSlice";
+import { addNote, archiveNote, deleteNote, unArchiveNote, updateNote } from "./dataSlice";
 
 interface homeState {
   selectedNoteId: number;
@@ -70,8 +70,9 @@ const homeSlice = createSlice({
     builder
       .addCase(deleteNote.fulfilled, resetSelection)
       .addCase(addNote.fulfilled, resetSelection)
-      .addCase(updateNote, resetSelection)
-      .addCase(setNoteArchivingStatus, resetSelection);
+      .addCase(updateNote.fulfilled, resetSelection)
+      .addCase(archiveNote.fulfilled, resetSelection)
+      .addCase(unArchiveNote.fulfilled, resetSelection);
   },
 });
 
