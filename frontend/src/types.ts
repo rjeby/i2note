@@ -36,7 +36,6 @@ export interface TagCardProps {
 
 export interface MessageProps {
   message: Message;
-  onMessageDeletion: (uuid: string) => void;
 }
 
 export type NoteType = "all-notes" | "archived-notes";

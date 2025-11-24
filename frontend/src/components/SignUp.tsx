@@ -1,6 +1,9 @@
+import { useAppDispatch } from "@/hooks";
+import { addMessage } from "@/slices/toastSlice";
 import { useState } from "react";
 
 const SignUp = () => {
+  const dispatch = useAppDispatch();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -65,8 +68,8 @@ const SignUp = () => {
         </div>
         <button
           type="submit"
-          disabled={!_isEmailValid || !_isPasswordValid || !_doesPasswordsMatch}
           onClick={(event) => handleSubmit(event)}
+          disabled={!_isEmailValid || _isPasswordValid || _doesPasswordsMatch}
           className="mt-8 self-center rounded-md bg-black px-4 py-1 font-medium text-white disabled:opacity-25"
         >
           Sign Up
