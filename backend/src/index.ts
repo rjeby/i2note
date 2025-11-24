@@ -1,11 +1,17 @@
-import express, { type NextFunction, type Request, type Response } from "express";
 import "dotenv/config";
+import express, { type NextFunction, type Request, type Response } from "express";
 import notesRouter from "./routes/notes.ts";
-
+import cors from "cors";
 const PORT = 3000;
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  })
+);
 app.use(express.json());
 
 app.use("/api/notes", notesRouter);

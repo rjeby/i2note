@@ -19,14 +19,14 @@ export const getAllNotes = async (req: Request, res: Response) => {
 
 export const isNotePayloadValid = (req: Request<{}, {}, NotePayload>, res: Response<{}, NotePayload>, next: NextFunction) => {
   const { title, content, tags } = { title: req.body.title, content: req.body.content, tags: req.body.tags };
-  if (!title || typeof title !== "string" || !title.trim().length) {
+  if (!("title" in req.body) || typeof title !== "string" || !title.trim().length) {
     return res.status(400).json({ message: "Invalid Note Title" });
   }
-  if (!content || typeof content !== "string") {
+  if (!("content" in req.body) || typeof content !== "string") {
     return res.status(400).json({ message: "Invalid Note Content" });
   }
 
-  if (!tags || !Array.isArray(tags)) {
+  if (!("tags" in req.body) || !Array.isArray(tags)) {
     return res.status(400).json({ message: "Invalid Note Tags" });
   }
 
@@ -85,6 +85,7 @@ export const updateNote = async (req: Request, res: Response<{}, NotePayload & {
       title: title,
       content: content,
       tags: {
+        set: [],
         connectOrCreate: tags.map((value) => ({ where: { content: value }, create: { content: value } })),
       },
     },
