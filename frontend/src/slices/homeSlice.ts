@@ -1,7 +1,7 @@
+import type { RootState } from "@/store";
+import type { NoteType } from "@/types";
+import { addNote, archiveNote, deleteNote, unArchiveNote, updateNote } from "@/slices/dataSlice";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../store";
-import type { NoteType } from "../types";
-import { addNote, archiveNote, deleteNote, unArchiveNote, updateNote } from "./dataSlice";
 
 interface homeState {
   selectedNoteId: number;

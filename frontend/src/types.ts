@@ -17,6 +17,12 @@ export interface NoteTag {
   tagId: number;
 }
 
+export interface Message {
+  uuid: string;
+  content: string;
+  type: "error" | "success";
+}
+
 export interface ShowNotesProps {
   type: NoteType;
 }
@@ -26,6 +32,11 @@ export interface NoteInfoCardProps {
 
 export interface TagCardProps {
   tag: string;
+}
+
+export interface MessageProps {
+  message: Message;
+  onMessageDeletion: (uuid: string) => void;
 }
 
 export type NoteType = "all-notes" | "archived-notes";

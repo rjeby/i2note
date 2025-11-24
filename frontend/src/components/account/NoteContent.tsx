@@ -1,16 +1,14 @@
-import type { TagCardProps } from "../types";
-
+import type { TagCardProps } from "@/types";
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { formateISO8601Date } from "../utils";
-import { addNote, deleteNote, selectSelectedNote, updateNote, archiveNote, unArchiveNote } from "../slices/dataSlice";
-import { selectIsNoteBeingCreated, setIsNoteBeingCreated } from "../slices/homeSlice";
-
-import iconTag from "../assets/icon-tag.svg";
-import iconClock from "../assets/icon-clock.svg";
-import iconArchive from "../assets/icon-archive.svg";
-import iconDelete from "../assets/icon-delete.svg";
-import { selectTagsForSelectedNote } from "../slices/dataSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { formateISO8601Date } from "@/utils";
+import { addNote, deleteNote, selectSelectedNote, updateNote, archiveNote, unArchiveNote } from "@/slices/dataSlice";
+import { selectIsNoteBeingCreated, setIsNoteBeingCreated } from "@/slices/homeSlice";
+import { selectTagsForSelectedNote } from "@/slices/dataSlice";
+import iconTag from "@/assets/icon-tag.svg";
+import iconClock from "@/assets/icon-clock.svg";
+import iconArchive from "@/assets/icon-archive.svg";
+import iconDelete from "@/assets/icon-delete.svg";
 
 const NoteContent = () => {
   const dispatch = useAppDispatch();

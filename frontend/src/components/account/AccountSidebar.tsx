@@ -1,16 +1,14 @@
-import type { ShowNotesProps, TagCardProps } from "../types";
-
-import logo from "../assets/favicon.svg";
-import iconHome from "../assets/icon-home.svg";
-import iconArchive from "../assets/icon-archive.svg";
-import iconChevronRight from "../assets/icon-chevron-right.svg";
-import iconTag from "../assets/icon-tag.svg";
-
-import type { RootState } from "../store";
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { selectTagsForFilteredNotesByArchivingStatus } from "../slices/dataSlice";
-import { selectSelectedNoteType, selectSelectedTagId, setSelectedNoteType } from "../slices/homeSlice";
-import { setSelectedTagId } from "../slices/homeSlice";
+import type { ShowNotesProps, TagCardProps } from "@/types";
+import type { RootState } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { selectTagsForFilteredNotesByArchivingStatus } from "@/slices/dataSlice";
+import { selectSelectedNoteType, selectSelectedTagId, setSelectedNoteType } from "@/slices/homeSlice";
+import { setSelectedTagId } from "@/slices/homeSlice";
+import logo from "@/assets/favicon.svg";
+import iconHome from "@/assets/icon-home.svg";
+import iconArchive from "@/assets/icon-archive.svg";
+import iconChevronRight from "@/assets/icon-chevron-right.svg";
+import iconTag from "@/assets/icon-tag.svg";
 
 const HomeSidebar = () => {
   const dispatch = useAppDispatch();

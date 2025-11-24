@@ -1,7 +1,7 @@
-import type { Note, NoteTag, Tag } from "../types";
+import type { Note, NoteTag, Tag } from "@/types";
+import type { RootState } from "@/store";
+import { selectFilterByTitle, selectSelectedNoteId, selectSelectedNoteType, selectSelectedTagId } from "@/slices/homeSlice";
 import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
-import type { RootState } from "../store";
-import { selectFilterByTitle, selectSelectedNoteId, selectSelectedNoteType, selectSelectedTagId } from "./homeSlice";
 
 const baseURI = "http://localhost:3000";
 

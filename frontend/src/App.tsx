@@ -1,8 +1,12 @@
-import "./App.css";
-import Home from "./components/Home";
+import { Outlet } from "react-router";
+import "@/App.css";
 
 function App() {
-  return <Home />;
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 }
 
 export default App;

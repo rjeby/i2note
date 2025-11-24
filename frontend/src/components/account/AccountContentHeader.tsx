@@ -1,7 +1,6 @@
-import iconSearch from "../assets/icon-search.svg";
-
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { selectFilterByTitle, selectSelectedNoteType, setFilterByTitle } from "../slices/homeSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { selectFilterByTitle, selectSelectedNoteType, setFilterByTitle } from "@/slices/homeSlice";
+import iconSearch from "@/assets/icon-search.svg";
 
 const HomeContentHeader = () => {
   const dispatch = useAppDispatch();

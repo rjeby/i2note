@@ -1,9 +1,9 @@
-import { useAppSelector } from "../hooks";
-import { selectIsNoteBeingCreated, selectSelectedNoteId } from "../slices/homeSlice";
-import AvailableNotes from "./AvailableNotes";
-import NoteContent from "./NoteContent";
+import { useAppSelector } from "@/hooks";
+import { selectIsNoteBeingCreated, selectSelectedNoteId } from "@/slices/homeSlice";
+import AvailableNotes from "@/components/account/AvailableNotes";
+import NoteContent from "@/components/account/NoteContent";
 
-const HomeContentCore = () => {
+const AccountContentCore = () => {
   const isNoteBeingCreated = useAppSelector(selectIsNoteBeingCreated);
   const selectedNoteId = useAppSelector(selectSelectedNoteId);
   return (
@@ -14,4 +14,4 @@ const HomeContentCore = () => {
   );
 };
 
-export default HomeContentCore;
+export default AccountContentCore;
