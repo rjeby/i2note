@@ -7,10 +7,19 @@ interface NotePayload {
   tags: string[];
 }
 
-export const getAllNotes = async (req: Request, res: Response) => {
+interface TokenPayload {
+  userId: number;
+  email: string;
+}
+
+export const getAllUserNotes = async (req: Request, res: Response<{}, TokenPayload>) => {
+  const { userId } = res.locals;
   const notes = await db.note.findMany({
     include: {
       tags: true,
+    },
+    where: {
+      userId: userId,
     },
   });
 
@@ -42,8 +51,8 @@ export const isNotePayloadValid = (req: Request<{}, {}, NotePayload>, res: Respo
   next();
 };
 
-export const isNotePresent = async (req: Request, res: Response<{}, { id: number }>, next: NextFunction) => {
-  const { id } = res.locals;
+export const isNotePresentAndAccessibleByUser = async (req: Request, res: Response<{}, { id: number } & TokenPayload>, next: NextFunction) => {
+  const { id, userId } = res.locals;
   const note = await db.note.findUnique({
     where: {
       id: id,
@@ -54,15 +63,20 @@ export const isNotePresent = async (req: Request, res: Response<{}, { id: number
     return res.status(404).json({ message: "Note is not Found" });
   }
 
+  if (note.userId !== userId) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
   next();
 };
 
-export const createNote = async (req: Request, res: Response<{}, NotePayload>) => {
-  const { title, content, tags } = res.locals;
+export const createNote = async (req: Request, res: Response<{}, NotePayload & TokenPayload>) => {
+  const { userId, title, content, tags } = res.locals;
   const note = await db.note.create({
     data: {
       title: title,
       content: content,
+      userId: userId,
       tags: {
         connectOrCreate: tags.map((value) => ({ where: { content: value }, create: { content: value } })),
       },

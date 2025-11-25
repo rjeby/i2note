@@ -32,7 +32,6 @@ const SignUp = () => {
       dispatch(addMessage({ content: (data as ResponseSuccess).message, type: "success" }));
     } catch (err) {
       if (err instanceof Error) {
-        console.log(err);
         dispatch(addMessage({ content: err.message, type: "error" }));
       }
     }

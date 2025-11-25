@@ -10,19 +10,28 @@ import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit"
 
 const baseURI = "http://localhost:3000";
 
+type NoteFetchElement = Note & { tags: Tag[] };
+
 type NoteCreationPayload = Omit<Note, "id" | "createdAt" | "updatedAt" | "isArchived"> & {
+  token: string;
   tags: string[];
 };
 type NoteUpdatePayload = Omit<Note, "createdAt" | "updatedAt" | "isArchived"> & {
+  token: string;
   tags: string[];
 };
 type NoteCreationResponse = Note & { tags: Tag[] };
 type NoteUpdateResponse = Note & { tags: Tag[] };
 
+type NoteOperationPayload = { id: number; token: string };
+
+type NoteFetchResponse = NoteFetchElement[];
+
 interface DataState {
   notes: Note[];
   tags: Tag[];
   noteTags: NoteTag[];
+  getUserNotesRequest: RequestState;
   addNoteRequest: RequestState;
   updateNoteRequest: RequestState;
   deleteNoteRequest: RequestState;
@@ -34,6 +43,10 @@ const initialState: DataState = {
   notes: [],
   tags: [],
   noteTags: [],
+  getUserNotesRequest: {
+    status: "idle",
+    error: null,
+  },
   addNoteRequest: {
     status: "idle",
     error: null,
@@ -195,14 +208,71 @@ export const dataSlice = createSlice({
       .addCase(updateNote.rejected, (state, action) => {
         state.unArchiveNoteRequest.status = "failed";
         state.unArchiveNoteRequest.error = action.error.message ?? "Unknown Error";
+      })
+      .addCase(getUserNotes.fulfilled, (state, action) => {
+        const notes: Note[] = [];
+        const tags: Tag[] = [];
+        const noteTags: NoteTag[] = [];
+        const tagIds = new Set();
+        const data = action.payload;
+        for (const item of data) {
+          notes.push({
+            id: item.id,
+            content: item.content,
+            title: item.title,
+            isArchived: item.isArchived,
+            updatedAt: item.updatedAt,
+            createdAt: item.createdAt,
+          });
+          for (const tag of item.tags) {
+            if (!tagIds.has(tag.id)) {
+              tags.push({ id: tag.id, content: tag.content });
+              noteTags.push({ noteId: item.id, tagId: tag.id });
+              tagIds.add(tag.id);
+            }
+          }
+        }
+        return {
+          ...state,
+          notes: notes,
+          tags: tags,
+          noteTags: noteTags,
+          getUserNotesRequest: {
+            ...state.getUserNotesRequest,
+            status: "succeeded",
+          },
+        };
+      })
+      .addCase(getUserNotes.pending, (state) => {
+        state.getUserNotesRequest.status = "pending";
+      })
+      .addCase(getUserNotes.rejected, (state, action) => {
+        state.getUserNotesRequest.status = "failed";
+        state.getUserNotesRequest.error = action.error.message ?? "Unknown Error";
       });
   },
 });
 
+export const getUserNotes = createAsyncThunk<NoteFetchResponse, string>("notes/getUserNotes", async (token: string) => {
+  const response = await fetch(`${baseURI}/api/notes`, {
+    method: "GET",
+    headers: {
+      Authorization: token,
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error((data as ResponseError).message);
+  }
+  return data;
+});
+
 export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayload>("notes/addNote", async (payload) => {
+  const { token } = payload;
   const response = await fetch(`${baseURI}/api/notes`, {
     method: "POST",
     headers: {
+      Authorization: token,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
@@ -214,9 +284,13 @@ export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayloa
   return data as NoteCreationResponse;
 });
 
-export const deleteNote = createAsyncThunk<Note, number>("notes/deleteNote", async (id) => {
+export const deleteNote = createAsyncThunk<Note, NoteOperationPayload>("notes/deleteNote", async (payload) => {
+  const { id, token } = payload;
   const response = await fetch(`${baseURI}/api/notes/${id}`, {
     method: "DELETE",
+    headers: {
+      Authorization: token,
+    },
   });
 
   const data = await response.json();
@@ -228,9 +302,13 @@ export const deleteNote = createAsyncThunk<Note, number>("notes/deleteNote", asy
   return data as Note;
 });
 
-export const archiveNote = createAsyncThunk<Note, number>("data/archiveNote", async (id) => {
+export const archiveNote = createAsyncThunk<Note, NoteOperationPayload>("data/archiveNote", async (payload) => {
+  const { id, token } = payload;
   const response = await fetch(`${baseURI}/api/notes/${id}/archive`, {
     method: "PUT",
+    headers: {
+      Authorization: token,
+    },
   });
   const data = await response.json();
   if (!response.ok) {
@@ -239,9 +317,13 @@ export const archiveNote = createAsyncThunk<Note, number>("data/archiveNote", as
   return data;
 });
 
-export const unArchiveNote = createAsyncThunk<Note, number>("data/unArchiveNote", async (id) => {
+export const unArchiveNote = createAsyncThunk<Note, NoteOperationPayload>("data/unArchiveNote", async (payload) => {
+  const { id, token } = payload;
   const response = await fetch(`${baseURI}/api/notes/${id}/unarchive`, {
     method: "PUT",
+    headers: {
+      Authorization: token,
+    },
   });
   const data = await response.json();
   if (!response.ok) {
@@ -253,9 +335,11 @@ export const unArchiveNote = createAsyncThunk<Note, number>("data/unArchiveNote"
 export const updateNote = createAsyncThunk<NoteUpdateResponse, NoteUpdatePayload>(
   "data/updateNote",
   async (payload) => {
+    const { token } = payload;
     const response = await fetch(`${baseURI}/api/notes/${payload.id}`, {
       method: "PATCH",
       headers: {
+        Authorization: token,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),

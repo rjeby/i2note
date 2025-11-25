@@ -9,12 +9,14 @@ import iconTag from "@/assets/icon-tag.svg";
 import iconClock from "@/assets/icon-clock.svg";
 import iconArchive from "@/assets/icon-archive.svg";
 import iconDelete from "@/assets/icon-delete.svg";
+import { selectToken } from "@/slices/authSlice";
 
 const NoteContent = () => {
   const dispatch = useAppDispatch();
   const tags = useAppSelector(selectTagsForSelectedNote);
   const isNoteBeingCreated = useAppSelector(selectIsNoteBeingCreated);
   const note = useAppSelector(selectSelectedNote);
+  const token = useAppSelector(selectToken) as string;
   const [isNoteBeingEdited, setIsNoteBeingEdited] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -22,9 +24,9 @@ const NoteContent = () => {
   const [tempTags, setTempTags] = useState<string[]>([]);
 
   useEffect(() => {
-      setTitle(note ? note.title : "");
-      setContent(note ? note.content : "");
-      setTempTags(note ? tags.map((value) => value.content) : []);
+    setTitle(note ? note.title : "");
+    setContent(note ? note.content : "");
+    setTempTags(note ? tags.map((value) => value.content) : []);
   }, [note, tags]);
 
   const handleAddTag = (tag: string) => {
@@ -145,6 +147,7 @@ const NoteContent = () => {
                 title: title,
                 content: content,
                 tags: tempTags,
+                token: token,
               };
               if (isNoteBeingCreated) {
                 dispatch(addNote(noteInfo));
@@ -172,9 +175,9 @@ const NoteContent = () => {
               className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
               onClick={() => {
                 if (!note.isArchived) {
-                  dispatch(archiveNote(note.id))
+                  dispatch(archiveNote({ id: note.id, token: token }));
                 } else {
-                  dispatch(unArchiveNote(note.id))
+                  dispatch(unArchiveNote({ id: note.id, token: token }));
                 }
               }}
             >
@@ -185,7 +188,7 @@ const NoteContent = () => {
               <button
                 type="button"
                 className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
-                onClick={() => dispatch(deleteNote(note.id))}
+                onClick={() => dispatch(deleteNote({ id: note.id, token: token }))}
               >
                 <img src={iconDelete} alt="Delete Icon" />
                 <span>Delete Note</span>

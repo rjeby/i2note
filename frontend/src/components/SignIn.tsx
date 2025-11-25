@@ -1,9 +1,12 @@
 import { useAppDispatch } from "@/hooks";
+import { setToken } from "@/slices/authSlice";
 import { addMessage } from "@/slices/toastSlice";
 import type { ResponseError } from "@/types";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 const SignIn = () => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -12,6 +15,7 @@ const SignIn = () => {
   const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     await signIn(email, password);
+    navigate("/account");
   };
 
   const signIn = async (email: string, password: string) => {
@@ -27,7 +31,7 @@ const SignIn = () => {
       if (!response.ok) {
         throw new Error((data as ResponseError).message);
       }
-      dispatch(addMessage({ content: data.token, type: "success" }));
+      dispatch(setToken(data.token));
     } catch (err) {
       if (err instanceof Error) {
         dispatch(addMessage({ content: err.message, type: "error" }));

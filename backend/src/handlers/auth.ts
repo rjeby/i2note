@@ -9,6 +9,11 @@ interface AuthPayload {
   password: string;
 }
 
+interface TokenPayload {
+  userId: number;
+  email: string;
+}
+
 export const isAuthPayloadValid = (req: Request<{}, {}, AuthPayload>, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
   if (!("email" in req.body) || typeof email !== "string" || !isEmailValid(email)) {
@@ -57,7 +62,7 @@ export const signIn = async (req: Request, res: Response<{}, AuthPayload>) => {
 
   const token = jwt.sign(
     {
-      id: user.id,
+      userId: user.id,
       email: user.email,
     },
     process.env.SECRET,
@@ -75,7 +80,6 @@ export const signUp = async (req: Request, res: Response<{}, AuthPayload>) => {
   const token = jwt.sign(
     {
       email: email,
-      password: password,
     },
     process.env.SECRET,
     { expiresIn: "1h" }
@@ -103,9 +107,6 @@ export const verifyEmail = async (req: Request<{}, {}, {}, { token: string }>, r
     return res.status(400).json({ message: "Invalid Token" });
   }
   const payload = jwt.verify(token, process.env.SECRET);
-  if (!(payload as { email: string }).email) {
-    return res.status(400).json({ message: "Invalid Token Payload" });
-  }
   const email = (payload as { email: string }).email;
   await db.user.update({
     data: {
@@ -116,6 +117,17 @@ export const verifyEmail = async (req: Request<{}, {}, {}, { token: string }>, r
     },
   });
   return res.status(200).json({ message: "Email Verified Successfully" });
+};
+
+export const isTokenValid = async (req: Request, res: Response<{}, TokenPayload>, next: NextFunction) => {
+  const { authorization } = req.headers;
+  if (!("authorization" in req.headers) || typeof authorization !== "string") {
+    return res.status(400).json({ message: "Invalid Token" });
+  }
+  const payload = jwt.verify(authorization, process.env.SECRET) as TokenPayload;
+  res.locals.userId = payload.userId;
+  res.locals.email = payload.email;
+  next();
 };
 
 const isEmailValid = (email: string) => {

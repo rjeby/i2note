@@ -11,6 +11,8 @@ import App from "./App";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import VerifyEmail from "./components/VerifyEmail";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -18,11 +20,15 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}>
-            <Route index element={<Home />} />
-            <Route path="sign-up" element={<SignUp />} />
-            <Route path="sign-in" element={<SignIn />} />
-            <Route path="account" element={<Account />} />
-            <Route path="verify-email" element={<VerifyEmail />} />
+            <Route element={<PublicRoute />}>
+              <Route index element={<Home />} />
+              <Route path="sign-up" element={<SignUp />} />
+              <Route path="sign-in" element={<SignIn />} />
+              <Route path="verify-email" element={<VerifyEmail />} />
+            </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="account" element={<Account />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
