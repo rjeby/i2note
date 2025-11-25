@@ -1,12 +1,38 @@
+import { useAppDispatch } from "@/hooks";
+import { addMessage } from "@/slices/toastSlice";
+import type { ResponseError } from "@/types";
 import { useState } from "react";
 
 const SignIn = () => {
+  const dispatch = useAppDispatch();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const _isEmailValid = isEmailValid(email);
   const _isPasswordValid = isPasswordValid(password);
-  const handleSubmit = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    await signIn(email, password);
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const response = await fetch("http://localhost:3000/api/sign-in", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email, password: password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error((data as ResponseError).message);
+      }
+      dispatch(addMessage({ content: data.token, type: "success" }));
+    } catch (err) {
+      if (err instanceof Error) {
+        dispatch(addMessage({ content: err.message, type: "error" }));
+      }
+    }
   };
 
   return (

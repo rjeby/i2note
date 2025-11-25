@@ -10,6 +10,7 @@ import "@/index.css";
 import App from "./App";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
+import VerifyEmail from "./components/VerifyEmail";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -21,6 +22,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="sign-up" element={<SignUp />} />
             <Route path="sign-in" element={<SignIn />} />
             <Route path="account" element={<Account />} />
+            <Route path="verify-email" element={<VerifyEmail />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

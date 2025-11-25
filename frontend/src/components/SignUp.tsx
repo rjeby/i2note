@@ -1,5 +1,6 @@
 import { useAppDispatch } from "@/hooks";
 import { addMessage } from "@/slices/toastSlice";
+import type { ResponseError, ResponseSuccess } from "@/types";
 import { useState } from "react";
 
 const SignUp = () => {
@@ -10,8 +11,31 @@ const SignUp = () => {
   const _isEmailValid = isEmailValid(email);
   const _isPasswordValid = isPasswordValid(password);
   const _doesPasswordsMatch = doesPasswordsMatch(password, confirmPassword);
-  const handleSubmit = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    await register(email, password);
+  };
+
+  const register = async (email: string, password: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/sign-up`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email, password: password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error((data as ResponseError).message);
+      }
+      dispatch(addMessage({ content: (data as ResponseSuccess).message, type: "success" }));
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err);
+        dispatch(addMessage({ content: err.message, type: "error" }));
+      }
+    }
   };
 
   return (
@@ -69,7 +93,7 @@ const SignUp = () => {
         <button
           type="submit"
           onClick={(event) => handleSubmit(event)}
-          disabled={!_isEmailValid || _isPasswordValid || _doesPasswordsMatch}
+          disabled={!_isEmailValid || !_isPasswordValid || !_doesPasswordsMatch}
           className="mt-8 self-center rounded-md bg-black px-4 py-1 font-medium text-white disabled:opacity-25"
         >
           Sign Up

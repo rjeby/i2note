@@ -38,4 +38,12 @@ export interface MessageProps {
   message: Message;
 }
 
+export interface RequestState {
+  status: RequestStatus;
+  error: string | null;
+}
+
 export type NoteType = "all-notes" | "archived-notes";
+export type RequestStatus = "idle" | "pending" | "succeeded" | "failed";
+export type ResponseSuccess = { message: string };
+export type ResponseError = { message: string };

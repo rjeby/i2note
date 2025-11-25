@@ -1,6 +1,11 @@
-import type { Note, NoteTag, Tag } from "@/types";
+import type { RequestState, ResponseError, Note, NoteTag, Tag } from "@/types";
 import type { RootState } from "@/store";
-import { selectFilterByTitle, selectSelectedNoteId, selectSelectedNoteType, selectSelectedTagId } from "@/slices/homeSlice";
+import {
+  selectFilterByTitle,
+  selectSelectedNoteId,
+  selectSelectedNoteType,
+  selectSelectedTagId,
+} from "@/slices/homeSlice";
 import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 
 const baseURI = "http://localhost:3000";
@@ -13,12 +18,6 @@ type NoteUpdatePayload = Omit<Note, "createdAt" | "updatedAt" | "isArchived"> & 
 };
 type NoteCreationResponse = Note & { tags: Tag[] };
 type NoteUpdateResponse = Note & { tags: Tag[] };
-type ResponseError = { message: string };
-
-interface RequestState {
-  status: "idle" | "pending" | "succeeded" | "failed";
-  error: string | null;
-}
 
 interface DataState {
   notes: Note[];

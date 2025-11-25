@@ -1,8 +1,11 @@
 import "dotenv/config";
 import express, { type NextFunction, type Request, type Response } from "express";
 import notesRouter from "./routes/notes.ts";
+import authRouter from "./routes/auth.ts";
 import cors from "cors";
-const PORT = 3000;
+
+const PORT = process.env.PORT;
+
 
 const app = express();
 
@@ -15,6 +18,7 @@ app.use(
 app.use(express.json());
 
 app.use("/api/notes", notesRouter);
+app.use("/api", authRouter);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ message: err.message });
