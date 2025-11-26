@@ -12,12 +12,12 @@ const Home = () => {
           </div>
 
           <ul className="flex gap-4 font-medium">
-            <li>
+            <li className="hover:scale-105">
               <NavLink to={"/sign-in"} className={"rounded-lg bg-gray-300 px-4 py-2"}>
                 Sign In
               </NavLink>
             </li>
-            <li>
+            <li className="hover:scale-105">
               <NavLink to={"/sign-up"} className={"rounded-lg bg-gray-300 px-4 py-2"}>
                 Sign Up
               </NavLink>

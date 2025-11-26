@@ -4,22 +4,24 @@ import { addMessage } from "@/slices/toastSlice";
 import type { ResponseError } from "@/types";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import Spinner from "./Spinner";
 
 const SignIn = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [isLoginRequestPending, setIsLoginRequestPending] = useState(false);
   const _isEmailValid = isEmailValid(email);
   const _isPasswordValid = isPasswordValid(password);
   const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     await signIn(email, password);
-    navigate("/account");
   };
 
   const signIn = async (email: string, password: string) => {
     try {
+      setIsLoginRequestPending(() => true);
       const response = await fetch("http://localhost:3000/api/sign-in", {
         method: "POST",
         headers: {
@@ -31,8 +33,11 @@ const SignIn = () => {
       if (!response.ok) {
         throw new Error((data as ResponseError).message);
       }
+      setIsLoginRequestPending(() => false);
       dispatch(setToken(data.token));
+      navigate("/account");
     } catch (err) {
+      setIsLoginRequestPending(() => false);
       if (err instanceof Error) {
         dispatch(addMessage({ content: err.message, type: "error" }));
       }
@@ -78,10 +83,11 @@ const SignIn = () => {
 
         <button
           type="submit"
-          disabled={!_isEmailValid || !_isPasswordValid}
+          disabled={!_isEmailValid || !_isPasswordValid || isLoginRequestPending}
           onClick={(event) => handleSubmit(event)}
-          className="mt-8 self-center rounded-md bg-black px-4 py-1 font-medium text-white disabled:opacity-25"
+          className="mt-8 flex items-center gap-2 self-center rounded-md bg-black px-4 py-1 font-medium text-white disabled:opacity-25"
         >
+          {isLoginRequestPending && <Spinner />}
           Sign In
         </button>
       </form>

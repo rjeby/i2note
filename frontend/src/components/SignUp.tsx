@@ -1,13 +1,17 @@
+import type { ResponseError, ResponseSuccess } from "@/types";
 import { useAppDispatch } from "@/hooks";
 import { addMessage } from "@/slices/toastSlice";
-import type { ResponseError, ResponseSuccess } from "@/types";
 import { useState } from "react";
+import { useNavigate } from "react-router";
+import Spinner from "./Spinner";
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [isRegisterRequestPending, setIsRegisterRequestPending] = useState(false);
   const _isEmailValid = isEmailValid(email);
   const _isPasswordValid = isPasswordValid(password);
   const _doesPasswordsMatch = doesPasswordsMatch(password, confirmPassword);
@@ -18,6 +22,7 @@ const SignUp = () => {
 
   const register = async (email: string, password: string) => {
     try {
+      setIsRegisterRequestPending(() => true);
       const response = await fetch(`http://localhost:3000/api/sign-up`, {
         method: "POST",
         headers: {
@@ -29,8 +34,11 @@ const SignUp = () => {
       if (!response.ok) {
         throw new Error((data as ResponseError).message);
       }
+      setIsRegisterRequestPending(() => false);
+      navigate("/sign-in");
       dispatch(addMessage({ content: (data as ResponseSuccess).message, type: "success" }));
     } catch (err) {
+      setIsRegisterRequestPending(() => false);
       if (err instanceof Error) {
         dispatch(addMessage({ content: err.message, type: "error" }));
       }
@@ -92,9 +100,10 @@ const SignUp = () => {
         <button
           type="submit"
           onClick={(event) => handleSubmit(event)}
-          disabled={!_isEmailValid || !_isPasswordValid || !_doesPasswordsMatch}
-          className="mt-8 self-center rounded-md bg-black px-4 py-1 font-medium text-white disabled:opacity-25"
+          disabled={!_isEmailValid || !_isPasswordValid || !_doesPasswordsMatch || isRegisterRequestPending}
+          className="mt-8 flex items-center gap-2 self-center rounded-md bg-black px-4 py-1 font-medium text-white disabled:opacity-25"
         >
+          {isRegisterRequestPending && <Spinner />}
           Sign Up
         </button>
       </form>

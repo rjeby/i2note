@@ -30,8 +30,10 @@ const NoteContent = () => {
   }, [note, tags]);
 
   const handleAddTag = (tag: string) => {
-    setTempTags((tg) => (tg.includes(tag) ? tg : [...tg, tag]));
-    setTag(() => "");
+    if (tag.length) {
+      setTempTags((tg) => (tg.includes(tag) ? tg : [...tg, tag]));
+      setTag(() => "");
+    }
   };
 
   const handleRemoveTag = (tag: string) => {
@@ -59,19 +61,20 @@ const NoteContent = () => {
   return (
     <div className="flex flex-1 flex-col px-6 pt-4">
       <div className="flex flex-col gap-4 border-b border-b-gray-300 pb-8">
-        <textarea
+        <input
           name="title"
           id="title"
+          type="text"
           disabled={!isNoteBeingCreated && !isNoteBeingEdited}
           value={title}
           maxLength={70}
           placeholder="Title ..."
           onChange={(event) => setTitle(event.target.value)}
-          className="resize-none text-2xl font-bold focus:outline-none"
+          className="text-2xl font-bold focus:outline-none"
         />
         <div className="flex flex-col gap-3">
           {(isNoteBeingEdited || isNoteBeingCreated) && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-2">
               <input
                 type="text"
                 name="tag"

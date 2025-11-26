@@ -34,7 +34,7 @@ export const isEmailUsed = async (req: Request, res: Response<{}, AuthPayload>, 
       email: email,
     },
   });
-  if (user) {
+  if (user && user.isVerified) {
     return res.status(409).json({ message: "Email is Already Used" });
   }
   next();
@@ -82,7 +82,7 @@ export const signUp = async (req: Request, res: Response<{}, AuthPayload>) => {
       email: email,
     },
     process.env.SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "15min" }
   );
   const verificationUrl = `http://localhost:5173/verify-email?token=${token}`;
   const options = {
@@ -91,9 +91,15 @@ export const signUp = async (req: Request, res: Response<{}, AuthPayload>) => {
     subject: "Email Verification",
     html: `Please click the following link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`,
   };
-  await db.user.create({
-    data: {
+  await db.user.upsert({
+    where: {
       email: email,
+    },
+    create: {
+      email: email,
+      password: hash,
+    },
+    update: {
       password: hash,
     },
   });
@@ -108,6 +114,16 @@ export const verifyEmail = async (req: Request<{}, {}, {}, { token: string }>, r
   }
   const payload = jwt.verify(token, process.env.SECRET);
   const email = (payload as { email: string }).email;
+  const user = await db.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+
+  if (user.isVerified) {
+    return res.status(400).json({ message: "User is Already Verified" });
+  }
+
   await db.user.update({
     data: {
       isVerified: true,

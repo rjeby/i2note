@@ -14,7 +14,7 @@ const Message = ({ message }: MessageProps) => {
       dispatch(deleteMessage(message.uuid));
       return;
     }
-    const timeoutID = setTimeout(() => setProgression(() => pg), 50);
+    const timeoutID = setTimeout(() => setProgression(() => pg), 20);
     return () => clearInterval(timeoutID);
   }, [progession, dispatch, message.uuid]);
 
