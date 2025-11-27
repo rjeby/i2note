@@ -84,7 +84,7 @@ export const signUp = async (req: Request, res: Response<{}, AuthPayload>) => {
     process.env.SECRET,
     { expiresIn: "15min" }
   );
-  const verificationUrl = `http://localhost:5173/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.VITE_FRONTEND_BASE_URI}/verify-email?token=${token}`;
   const options = {
     from: process.env.TRANSPORTER_EMAIL,
     to: email,

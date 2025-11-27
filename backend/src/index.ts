@@ -1,17 +1,17 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import express, { type NextFunction, type Request, type Response } from "express";
 import notesRouter from "./routes/notes.ts";
 import authRouter from "./routes/auth.ts";
 import cors from "cors";
 
+dotenv.config({ path: "../.env" });
+
 const PORT = process.env.PORT;
-
-
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.VITE_FRONTEND_BASE_URI,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   })
 );

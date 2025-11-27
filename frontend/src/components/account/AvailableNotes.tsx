@@ -78,7 +78,7 @@ const NoteInfoCard = ({ note }: NoteInfoCardProps) => {
       onClick={() => dispatch(setSelectedNoteId(note.id))}
     >
       <span className="text-left text-xl font-medium">{note.title}</span>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex h-20 flex-wrap items-start gap-2 overflow-scroll">
         {tags.map((tag) => (
           <span key={tag.id} className="rounded-sm bg-gray-300 px-2 py-1">
             {tag.content}

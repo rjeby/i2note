@@ -17,7 +17,7 @@ const VerifyEmail = () => {
     if (req) {
       const verify = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/api/verify-email?token=${token}`, {
+          const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/verify-email?token=${token}`, {
             method: "GET",
           });
           const data = await response.json();

@@ -23,7 +23,7 @@ const SignUp = () => {
   const register = async (email: string, password: string) => {
     try {
       setIsRegisterRequestPending(() => true);
-      const response = await fetch(`http://localhost:3000/api/sign-up`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/sign-up`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

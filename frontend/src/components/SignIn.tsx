@@ -22,7 +22,7 @@ const SignIn = () => {
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoginRequestPending(() => true);
-      const response = await fetch("http://localhost:3000/api/sign-in", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/sign-in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -8,8 +8,6 @@ import {
 } from "@/slices/homeSlice";
 import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 
-const baseURI = "http://localhost:3000";
-
 type NoteFetchElement = Note & { tags: Tag[] };
 
 type NoteCreationPayload = Omit<Note, "id" | "createdAt" | "updatedAt" | "isArchived"> & {
@@ -254,7 +252,7 @@ export const dataSlice = createSlice({
 });
 
 export const getUserNotes = createAsyncThunk<NoteFetchResponse, string>("notes/getUserNotes", async (token: string) => {
-  const response = await fetch(`${baseURI}/api/notes`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes`, {
     method: "GET",
     headers: {
       Authorization: token,
@@ -269,7 +267,7 @@ export const getUserNotes = createAsyncThunk<NoteFetchResponse, string>("notes/g
 
 export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayload>("notes/addNote", async (payload) => {
   const { token } = payload;
-  const response = await fetch(`${baseURI}/api/notes`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes`, {
     method: "POST",
     headers: {
       Authorization: token,
@@ -286,7 +284,7 @@ export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayloa
 
 export const deleteNote = createAsyncThunk<Note, NoteOperationPayload>("notes/deleteNote", async (payload) => {
   const { id, token } = payload;
-  const response = await fetch(`${baseURI}/api/notes/${id}`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: token,
@@ -304,7 +302,7 @@ export const deleteNote = createAsyncThunk<Note, NoteOperationPayload>("notes/de
 
 export const archiveNote = createAsyncThunk<Note, NoteOperationPayload>("data/archiveNote", async (payload) => {
   const { id, token } = payload;
-  const response = await fetch(`${baseURI}/api/notes/${id}/archive`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${id}/archive`, {
     method: "PUT",
     headers: {
       Authorization: token,
@@ -319,7 +317,7 @@ export const archiveNote = createAsyncThunk<Note, NoteOperationPayload>("data/ar
 
 export const unArchiveNote = createAsyncThunk<Note, NoteOperationPayload>("data/unArchiveNote", async (payload) => {
   const { id, token } = payload;
-  const response = await fetch(`${baseURI}/api/notes/${id}/unarchive`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${id}/unarchive`, {
     method: "PUT",
     headers: {
       Authorization: token,
@@ -336,7 +334,7 @@ export const updateNote = createAsyncThunk<NoteUpdateResponse, NoteUpdatePayload
   "data/updateNote",
   async (payload) => {
     const { token } = payload;
-    const response = await fetch(`${baseURI}/api/notes/${payload.id}`, {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${payload.id}`, {
       method: "PATCH",
       headers: {
         Authorization: token,
