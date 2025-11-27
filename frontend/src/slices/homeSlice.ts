@@ -1,7 +1,7 @@
 import type { RootState } from "@/store";
 import type { NoteType } from "@/types";
 import { addNote, archiveNote, deleteNote, unArchiveNote, updateNote } from "@/slices/dataSlice";
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, isAnyOf, type PayloadAction } from "@reduxjs/toolkit";
 
 interface homeState {
   selectedNoteId: number;
@@ -67,12 +67,16 @@ const homeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(deleteNote.fulfilled, resetSelection)
-      .addCase(addNote.fulfilled, resetSelection)
-      .addCase(updateNote.fulfilled, resetSelection)
-      .addCase(archiveNote.fulfilled, resetSelection)
-      .addCase(unArchiveNote.fulfilled, resetSelection);
+    builder.addMatcher(
+      isAnyOf(
+        deleteNote.fulfilled,
+        addNote.fulfilled,
+        updateNote.fulfilled,
+        archiveNote.fulfilled,
+        unArchiveNote.fulfilled,
+      ),
+      resetSelection,
+    );
   },
 });
 
@@ -81,6 +85,8 @@ const resetSelection = (state: homeState) => {
     ...state,
     selectedTagId: -1,
     selectedNoteId: -1,
+    filterByTitle: "",
+    isNoteBeingCreated: false,
   };
 };
 

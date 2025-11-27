@@ -203,11 +203,11 @@ export const dataSlice = createSlice({
         };
       })
       .addCase(updateNote.pending, (state) => {
-        state.unArchiveNoteRequest.status = "pending";
+        state.updateNoteRequest.status = "pending";
       })
       .addCase(updateNote.rejected, (state, action) => {
-        state.unArchiveNoteRequest.status = "failed";
-        state.unArchiveNoteRequest.error = action.error.message ?? "Unknown Error";
+        state.updateNoteRequest.status = "failed";
+        state.updateNoteRequest.error = action.error.message ?? "Unknown Error";
       })
       .addCase(getUserNotes.fulfilled, (state, action) => {
         const notes: Note[] = [];
@@ -359,6 +359,11 @@ export const selectNotesById = (state: RootState, id: number) => state.data.note
 export const selectNoteTags = (state: RootState) => state.data.noteTags;
 export const selectTagsById = (state: RootState, id: number) => state.data.tags.find((value) => value.id === id);
 export const selectTags = (state: RootState) => state.data.tags;
+export const selectIsAddNotePending = (state: RootState) => state.data.addNoteRequest.status === "pending";
+export const selectIsUpdateNotePending = (state: RootState) => state.data.updateNoteRequest.status === "pending";
+export const selectIsDeleteNotePending = (state: RootState) => state.data.deleteNoteRequest.status === "pending";
+export const selectIsArchiveNotePending = (state: RootState) => state.data.archiveNoteRequest.status === "pending";
+export const selectIsUnArchiveNotePending = (state: RootState) => state.data.unArchiveNoteRequest.status === "pending";
 
 export const selectAvailableNotes = createSelector(
   [selectNotes, selectNoteTags, selectFilterByTitle, selectSelectedTagId, selectSelectedNoteType],

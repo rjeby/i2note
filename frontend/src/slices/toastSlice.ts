@@ -1,6 +1,7 @@
 import type { Message } from "@/types";
-import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, isAnyOf, nanoid, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
+import { addNote, archiveNote, deleteNote, getUserNotes, unArchiveNote, updateNote } from "./dataSlice";
 
 interface ToastState {
   messages: Message[];
@@ -28,6 +29,22 @@ const toastSlice = createSlice({
       const uuid = action.payload;
       return { messages: state.messages.filter((value) => value.uuid !== uuid) };
     },
+  },
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      isAnyOf(
+        getUserNotes.rejected,
+        addNote.rejected,
+        updateNote.rejected,
+        deleteNote.rejected,
+        archiveNote.rejected,
+        unArchiveNote.rejected,
+      ),
+      (state, action) => {
+        const message: Message = { uuid: nanoid(), content: action.error.message ?? "Unknown", type: "error" };
+        return { messages: [...state.messages, message] };
+      },
+    );
   },
 });
 

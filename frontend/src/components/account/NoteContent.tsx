@@ -2,7 +2,19 @@ import type { TagCardProps } from "@/types";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { formateISO8601Date } from "@/utils";
-import { addNote, deleteNote, selectSelectedNote, updateNote, archiveNote, unArchiveNote } from "@/slices/dataSlice";
+import {
+  addNote,
+  deleteNote,
+  selectSelectedNote,
+  updateNote,
+  archiveNote,
+  unArchiveNote,
+  selectIsAddNotePending,
+  selectIsUpdateNotePending,
+  selectIsDeleteNotePending,
+  selectIsArchiveNotePending,
+  selectIsUnArchiveNotePending,
+} from "@/slices/dataSlice";
 import { selectIsNoteBeingCreated, setIsNoteBeingCreated } from "@/slices/homeSlice";
 import { selectTagsForSelectedNote } from "@/slices/dataSlice";
 import iconTag from "@/assets/icon-tag.svg";
@@ -10,11 +22,19 @@ import iconClock from "@/assets/icon-clock.svg";
 import iconArchive from "@/assets/icon-archive.svg";
 import iconDelete from "@/assets/icon-delete.svg";
 import { selectToken } from "@/slices/authSlice";
+import Spinner from "../Spinner";
 
 const NoteContent = () => {
   const dispatch = useAppDispatch();
   const tags = useAppSelector(selectTagsForSelectedNote);
   const isNoteBeingCreated = useAppSelector(selectIsNoteBeingCreated);
+  const isAddNotePending = useAppSelector(selectIsAddNotePending);
+  const isUpdateNotePending = useAppSelector(selectIsUpdateNotePending);
+  const isDeleteNotePending = useAppSelector(selectIsDeleteNotePending);
+  const isArchiveNotePending = useAppSelector(selectIsArchiveNotePending);
+  const isUnArchiveNotePending = useAppSelector(selectIsUnArchiveNotePending);
+  const isActionPending =
+    isAddNotePending || isUpdateNotePending || isDeleteNotePending || isArchiveNotePending || isUnArchiveNotePending;
   const note = useAppSelector(selectSelectedNote);
   const token = useAppSelector(selectToken) as string;
   const [isNoteBeingEdited, setIsNoteBeingEdited] = useState(false);
@@ -39,10 +59,6 @@ const NoteContent = () => {
   const handleRemoveTag = (tag: string) => {
     setTempTags((tg) => tg.filter((value) => value !== tag));
     setTag(() => "");
-  };
-
-  const handleEditNote = () => {
-    setIsNoteBeingEdited(() => true);
   };
 
   const handleCancelEdit = () => {
@@ -74,7 +90,7 @@ const NoteContent = () => {
         />
         <div className="flex flex-col gap-3">
           {(isNoteBeingEdited || isNoteBeingCreated) && (
-            <div className="flex items-center gap-4 mb-2">
+            <div className="mb-2 flex items-center gap-4">
               <input
                 type="text"
                 name="tag"
@@ -140,10 +156,11 @@ const NoteContent = () => {
         <div className="flex gap-4">
           <button
             type="button"
-            className="rounded-sm bg-blue-600 px-4 py-2 text-white"
+            className="flex items-center gap-2 rounded-sm bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+            disabled={isActionPending}
             onClick={() => {
               if (!isNoteBeingEdited && !isNoteBeingCreated) {
-                handleEditNote();
+                setIsNoteBeingEdited(() => true);
                 return;
               }
               const noteInfo = {
@@ -154,18 +171,25 @@ const NoteContent = () => {
               };
               if (isNoteBeingCreated) {
                 dispatch(addNote(noteInfo));
+                return;
               }
               if (note && isNoteBeingEdited) {
                 dispatch(updateNote({ id: note.id, ...noteInfo }));
+                return;
               }
-              handleCancelEdit();
             }}
           >
+            {(isAddNotePending || isUpdateNotePending) && <Spinner />}
             {isNoteBeingEdited || isNoteBeingCreated ? "Save Note" : "Edit Note"}
           </button>
 
           {(isNoteBeingEdited || isNoteBeingCreated) && (
-            <button type="button" className="rounded-sm bg-gray-200 px-4 py-2 text-gray-500" onClick={handleCancelEdit}>
+            <button
+              type="button"
+              className="rounded-sm bg-gray-200 px-4 py-2 text-gray-500 disabled:opacity-50"
+              disabled={isActionPending}
+              onClick={handleCancelEdit}
+            >
               Cancel
             </button>
           )}
@@ -175,7 +199,8 @@ const NoteContent = () => {
           <div className="flex gap-4">
             <button
               type="button"
-              className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
+              className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100 disabled:opacity-50"
+              disabled={isActionPending}
               onClick={() => {
                 if (!note.isArchived) {
                   dispatch(archiveNote({ id: note.id, token: token }));
@@ -184,16 +209,21 @@ const NoteContent = () => {
                 }
               }}
             >
-              <img src={iconArchive} alt="Archive Icon" />
+              {isArchiveNotePending || isUnArchiveNotePending ? (
+                <Spinner />
+              ) : (
+                <img src={iconArchive} alt="Archive Icon" />
+              )}
               <span>{note.isArchived ? "Unarchive Note" : "Archive Note"}</span>
             </button>
             {!note.isArchived && (
               <button
                 type="button"
-                className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100"
+                className="flex items-center gap-2 rounded-sm border border-gray-300 px-2 py-2 hover:bg-gray-100 disabled:opacity-50"
+                disabled={isActionPending}
                 onClick={() => dispatch(deleteNote({ id: note.id, token: token }))}
               >
-                <img src={iconDelete} alt="Delete Icon" />
+                {isDeleteNotePending ? <Spinner /> : <img src={iconDelete} alt="Delete Icon" />}
                 <span>Delete Note</span>
               </button>
             )}
