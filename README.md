@@ -37,7 +37,7 @@ A simple full-stack web app for creating, organizing, and managing personal note
 
 ---
 
-### Home Page (Notes & Tags)
+### Account Page (Notes & Tags)
 
 <p align="center">
   <img src="images/all_notes.png" width="70%" />
