@@ -22,8 +22,6 @@ A simple full-stack web app for creating, organizing, and managing personal note
 
 ## Main Features
 
----
-
 ### Landing Page (Sign In / Sign Up)
 
 <p align="center">
@@ -34,8 +32,6 @@ A simple full-stack web app for creating, organizing, and managing personal note
 - User authentication (Sign In / Sign Up)
 - Clean landing experience
 - Secure access to personal notes
-
----
 
 ### Account Page (Notes & Tags)
 
@@ -50,8 +46,6 @@ A simple full-stack web app for creating, organizing, and managing personal note
   - Title
 - Tag system for organization
 
----
-
 ### View, Edit, and Manage Notes
 
 <p align="center">
@@ -62,8 +56,6 @@ A simple full-stack web app for creating, organizing, and managing personal note
 - Edit note content
 - Delete notes
 - Archive / Unarchive notes
-
----
 
 ### Create Notes
 
@@ -86,8 +78,6 @@ git clone <your-repo-url>
 cd i2note
 ```
 
----
-
 ### 2. Install dependencies
 
 Install packages for both backend and frontend:
@@ -99,8 +89,6 @@ npm install
 cd ../frontend
 npm install
 ```
-
----
 
 ### 3. Create `.env` file
 
@@ -117,8 +105,6 @@ VITE_BACKEND_BASE_URI="http://localhost:3000"
 VITE_FRONTEND_BASE_URI="http://localhost:5173"
 ```
 
----
-
 ### 4. Setup database
 
 Inside **backend** folder:
@@ -127,8 +113,6 @@ Inside **backend** folder:
 npx prisma migrate dev
 npx prisma generate
 ```
-
----
 
 ### 5. Run the project
 
