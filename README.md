@@ -1,4 +1,4 @@
-# Idea2Note (In Progress)
+# Idea2Note
 
 A simple full-stack web app for creating, organizing, and managing personal notes.
 
