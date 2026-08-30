@@ -12,7 +12,8 @@ A simple full-stack web app for creating, organizing, and managing personal note
 | ------------------------------------------------------------------------------------------------------------- | --------------------- | ---------------- |
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="40"/> | **TypeScript**        | Type safety      |
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="40"/>           | **React**             | User interface   |
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="40"/>         | **Node.js (Express)** | Backend server   |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="40"/>         | **Node.js (Express)** | Backend Server 1   |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg" width="40"/>         | **Java (Spring Boot)** | Backend Server 2   |
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redux/redux-original.svg" width="40"/>           | **Redux**             | State management |
 | <img src="https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/tailwindcss.svg" width="40"/>                   | **Tailwind CSS**      | Styling          |
 
