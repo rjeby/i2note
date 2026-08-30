@@ -3,21 +3,23 @@ package com.rjeby.i2note.models;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.hibernate.annotations.ManyToAny;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.Builder;
 
 @Entity
 @Table(name = "notes")
+@Builder
 public class Note {
 
     @Id
@@ -39,8 +41,11 @@ public class Note {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToMany
+    @JoinTable(name = "note_tags", joinColumns = @JoinColumn(name = "note_id", nullable = false), inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false), uniqueConstraints = @UniqueConstraint(columnNames = {
+            "note_id", "tag_id" })
 
-    @ManyToMany(mappedBy = "notes")
+    )
     private List<Tag> tags;
 
     @ManyToOne

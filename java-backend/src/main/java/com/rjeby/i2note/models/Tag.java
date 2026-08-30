@@ -14,9 +14,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Builder;
 
 @Entity
 @Table(name = "tags")
+@Builder
 public class Tag {
 
     @Id
@@ -34,16 +36,7 @@ public class Tag {
     private LocalDateTime updatedAt;
 
 
-    @ManyToMany
-    @JoinTable(
-        name = "note_tags",
-        joinColumns = @JoinColumn(name = "tag_id", nullable = false),
-        inverseJoinColumns = @JoinColumn(name = "note_id", nullable = false),
-        uniqueConstraints = @UniqueConstraint(
-            columnNames = {"note_id", "tag_id"}
-        )
-
-    )
+    @ManyToMany(mappedBy = "tags")
     private List<Note> notes;
 
     @PrePersist
