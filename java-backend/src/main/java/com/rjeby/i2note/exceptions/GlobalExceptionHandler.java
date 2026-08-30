@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import com.rjeby.i2note.dtio.ErrorResponseDto;
+import com.rjeby.i2note.dto.ErrorResponseDto;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
