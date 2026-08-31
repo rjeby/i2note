@@ -6,9 +6,10 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import org.springframework.security.oauth2.jwt.JwtException;
 
-import com.rjeby.i2note.dto.ResponseMessageDto;
+import com.rjeby.i2note.dtos.ResponseMessageDto;
+
+import org.springframework.security.oauth2.jwt.JwtException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -36,7 +37,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseMessageDto> handleException(Exception e) {
-        System.err.println(e.getMessage());
+        e.printStackTrace();;
         
 
         ResponseMessageDto error = new ResponseMessageDto("Internal Server Error");

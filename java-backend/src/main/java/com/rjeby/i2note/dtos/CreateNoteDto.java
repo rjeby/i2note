@@ -1,0 +1,9 @@
+package com.rjeby.i2note.dtos;
+
+import java.util.List;
+
+public record CreateNoteDto(
+        String title,
+        String content,
+        List<String> tags) {
+}

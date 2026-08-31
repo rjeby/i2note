@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rjeby.i2note.dto.ResponseMessageDto;
-import com.rjeby.i2note.dto.SignInDto;
-import com.rjeby.i2note.dto.SignInResponseDto;
-import com.rjeby.i2note.dto.SignUpDto;
+import com.rjeby.i2note.dtos.ResponseMessageDto;
+import com.rjeby.i2note.dtos.SignInDto;
+import com.rjeby.i2note.dtos.SignInResponseDto;
+import com.rjeby.i2note.dtos.SignUpDto;
 import com.rjeby.i2note.services.AuthService;
 
 @RestController

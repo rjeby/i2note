@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.rjeby.i2note.dto.SignInDto;
-import com.rjeby.i2note.dto.SignUpDto;
+import com.rjeby.i2note.dtos.SignInDto;
+import com.rjeby.i2note.dtos.SignUpDto;
 import com.rjeby.i2note.models.User;
 import com.rjeby.i2note.repositories.UserRepository;
 
