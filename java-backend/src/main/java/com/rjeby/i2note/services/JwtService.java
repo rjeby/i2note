@@ -20,11 +20,11 @@ public class JwtService {
         this.jwtDecoder = jwtDecoder;
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, Integer delta) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder().subject(email)
                 .issuedAt(now)
-                .expiresAt(now.plus(15, ChronoUnit.MINUTES))
+                .expiresAt(now.plus(delta, ChronoUnit.MINUTES))
                 .build();
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }

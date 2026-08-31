@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.rjeby.i2note.dto.SignInDto;
 import com.rjeby.i2note.dto.SignUpDto;
 import com.rjeby.i2note.models.User;
 import com.rjeby.i2note.repositories.UserRepository;
@@ -34,6 +35,39 @@ public class AuthService {
 
     }
 
+    public String signIn(SignInDto signInDto) {
+        String email = signInDto.email();
+        String password = signInDto.password();
+        if (!isEmailValid(email)) {
+            throw new IllegalArgumentException("Invalid Email");
+        }
+        if (!isPasswordValid(password)) {
+            throw new IllegalArgumentException("Invalid Password");
+        }
+
+        Optional<User> optional = userRepository.findByEmail(email);
+        if (optional.isEmpty()) {
+            throw new IllegalArgumentException("Email doesn't Exist");
+
+        }
+
+        User user = optional.get();
+
+        if (Boolean.FALSE.equals(user.getIsVerified())) {
+            throw new IllegalArgumentException("Email Must be Verified");
+
+        }
+
+        boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
+        if (!isPasswordCorrect) {
+            throw new IllegalArgumentException("Incorrect Password");
+        }
+
+        String token = jwtService.generateToken(email, 15);
+        return token;
+
+    }
+
     public void signUp(SignUpDto signUpDto) {
         String email = signUpDto.email();
         String password = signUpDto.password();
@@ -58,7 +92,7 @@ public class AuthService {
         }
 
         userRepository.save(User.builder().email(email).password(hash).isVerified(false).build());
-        String token = jwtService.generateToken(email);
+        String token = jwtService.generateToken(email, 60);
         mailService.sendVerificationEmail(email, token);
 
     }
@@ -71,8 +105,8 @@ public class AuthService {
         }
 
         User user = optional.get();
-        if (user.getIsVerified()) {
-            throw new IllegalArgumentException("User is Already Verified");
+        if (Boolean.TRUE.equals(user.getIsVerified())) {
+            throw new IllegalArgumentException("Email is Already Verified");
         }
 
         user.setIsVerified(true);

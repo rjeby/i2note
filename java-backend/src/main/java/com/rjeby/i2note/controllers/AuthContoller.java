@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rjeby.i2note.dto.ResponseMessageDto;
+import com.rjeby.i2note.dto.SignInDto;
+import com.rjeby.i2note.dto.SignInResponseDto;
 import com.rjeby.i2note.dto.SignUpDto;
 import com.rjeby.i2note.services.AuthService;
 
@@ -32,7 +34,9 @@ public class AuthContoller {
     }
 
     @PostMapping("/sign-in")
-    public void signIn() {
+    public ResponseEntity<SignInResponseDto> signIn(@RequestBody SignInDto signInDto) {
+        String token = authService.signIn(signInDto);
+        return ResponseEntity.status(HttpStatus.OK).body(new SignInResponseDto(token));
 
     }
 
