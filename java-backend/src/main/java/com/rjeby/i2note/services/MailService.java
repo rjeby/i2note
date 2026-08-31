@@ -16,7 +16,7 @@ public class MailService {
     public void sendVerificationEmail(String email, String token) {
 
         String verificationUrl =
-                "http://localhost:8080/api/v1/verify-email?token=" + token;
+                "http://localhost:8080/api/verify-email?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
 

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.rjeby.i2note.dtos.CreateNoteDto;
 import com.rjeby.i2note.dtos.NoteResponseDto;
+import com.rjeby.i2note.dtos.TagResponseDto;
 import com.rjeby.i2note.dtos.UpdateNoteDto;
 import com.rjeby.i2note.models.Note;
 import com.rjeby.i2note.models.Tag;
@@ -64,8 +65,13 @@ public class NoteService {
     }
 
     private NoteResponseDto noteToNoteResponseDto(Note note) {
-        List<String> tags = note.getTags().stream().map(t -> t.getContent()).toList();
-        return new NoteResponseDto(note.getId(), note.getTitle(), note.getContent(), note.getIsArchived(), tags);
+        List<TagResponseDto> tags = note.getTags().stream().map(t -> tagToTagResponseDto(t)).toList();
+        return new NoteResponseDto(note.getId(), note.getTitle(), note.getContent(), note.getIsArchived(),
+                note.getCreatedAt(), note.getUpdatedAt(), tags);
+    }
+
+    private TagResponseDto tagToTagResponseDto(Tag tag) {
+        return new TagResponseDto(tag.getId(), tag.getContent(), tag.getCreatedAt(), tag.getUpdatedAt());
     }
 
     public List<NoteResponseDto> getAllUserNotes(String token) {
@@ -234,7 +240,7 @@ public class NoteService {
         }
 
         NoteResponseDto deleted = noteToNoteResponseDto(note);
-        noteRepository.delete(note); 
+        noteRepository.delete(note);
         return deleted;
     }
 
