@@ -10,25 +10,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rjeby.i2note.dtos.ResponseMessageDto;
 import com.rjeby.i2note.dtos.SignInDto;
 import com.rjeby.i2note.dtos.SignInResponseDto;
+import com.rjeby.i2note.dtos.ResponseMessageDto;
+
 import com.rjeby.i2note.dtos.SignUpDto;
 import com.rjeby.i2note.services.AuthService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api")
-public class AuthContoller {
+@RequiredArgsConstructor
+public class AuthController {
 
     private final AuthService authService;
 
-    public AuthContoller(AuthService authService) {
-        this.authService = authService;
-    }
-
     @PostMapping("/sign-up")
-    public ResponseEntity<ResponseMessageDto> signUp(@RequestBody SignUpDto signUpDto) {
+    public ResponseEntity<ResponseMessageDto> signUp(@Valid @RequestBody SignUpDto signUpDto) {
 
         authService.signUp(signUpDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessageDto("Please Verify your Email"));
@@ -36,14 +37,13 @@ public class AuthContoller {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<SignInResponseDto> signIn(@RequestBody SignInDto signInDto) {
-        String token = authService.signIn(signInDto);
-        return ResponseEntity.status(HttpStatus.OK).body(new SignInResponseDto(token));
+    public ResponseEntity<SignInResponseDto> signIn(@Valid @RequestBody SignInDto authRequestDto) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.signIn(authRequestDto));
 
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<ResponseMessageDto> verifyEmail(@RequestParam(required = false) String token) {
+    public ResponseEntity<ResponseMessageDto> verifyEmail(@RequestParam(required = true) String token) {
         authService.verifyEmail(token);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessageDto("Email Verified Successfully"));
 

@@ -1,5 +1,5 @@
 package com.rjeby.i2note.dtos;
 
-public record SignInResponseDto(String token) {
-    
+public record SignInResponseDto(String token, String email, Long expiresAt) {
+
 }

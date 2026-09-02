@@ -3,8 +3,6 @@ package com.rjeby.i2note.services;
 import com.rjeby.i2note.repositories.NoteRepository;
 import com.rjeby.i2note.repositories.TagRepository;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -18,230 +16,121 @@ import com.rjeby.i2note.models.Tag;
 import com.rjeby.i2note.models.User;
 import com.rjeby.i2note.repositories.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class NoteService {
 
-    private final TagRepository tagRepository;
-    private final NoteRepository noteRepository;
-    public final JwtService jwtService;
-    public final UserRepository userRepository;
+        private final TagRepository tagRepository;
+        private final NoteRepository noteRepository;
+        private final UserRepository userRepository;
 
-    public NoteService(JwtService jwtService, UserRepository userRepository, NoteRepository noteRepository,
-            TagRepository tagRepository) {
-        this.jwtService = jwtService;
-        this.userRepository = userRepository;
-        this.noteRepository = noteRepository;
-        this.tagRepository = tagRepository;
-    }
+        public List<NoteResponseDto> getAllUserNotes(String email) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                return user.getNotes().stream().map(this::noteToNoteResponseDto).toList();
 
-    private boolean isTitleValid(String title) {
-
-        return title != null && title.trim().length() > 0;
-    }
-
-    private boolean isContentValid(String content) {
-        return content != null;
-    }
-
-    private boolean isTagsValid(List<String> tags) {
-        return tags != null && tags.stream().allMatch(tag -> isTagValid(tag));
-    }
-
-    private boolean isTagValid(String content) {
-        return content != null;
-    }
-
-    private boolean isIdValid(String id) {
-
-        if (id == null || id.isBlank()) {
-            return false;
-        }
-        try {
-            long value = Integer.parseInt(id);
-            return value > 0;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private NoteResponseDto noteToNoteResponseDto(Note note) {
-        List<TagResponseDto> tags = note.getTags().stream().map(t -> tagToTagResponseDto(t)).toList();
-        return new NoteResponseDto(note.getId(), note.getTitle(), note.getContent(), note.getIsArchived(),
-                note.getCreatedAt(), note.getUpdatedAt(), tags);
-    }
-
-    private TagResponseDto tagToTagResponseDto(Tag tag) {
-        return new TagResponseDto(tag.getId(), tag.getContent(), tag.getCreatedAt(), tag.getUpdatedAt());
-    }
-
-    public List<NoteResponseDto> getAllUserNotes(String token) {
-        String email = jwtService.getEmailFromToken(token);
-        Optional<User> optional = userRepository.findByEmail(email);
-        if (optional.isEmpty()) {
-            throw new IllegalArgumentException("User doesn't Exist");
         }
 
-        User user = optional.get();
-        return user.getNotes().stream().map(n -> noteToNoteResponseDto(n)).toList();
+        public NoteResponseDto createUserNote(String email, CreateNoteDto noteDto) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                String title = noteDto.title();
+                String content = noteDto.content();
+                List<String> tagContents = noteDto.tags();
 
-    }
+                List<Tag> tags = tagContents.stream()
+                                .map(c -> tagRepository.findByContent(c)
+                                                .orElseGet(() -> tagRepository.save(
+                                                                Tag.builder()
+                                                                                .content(c)
 
-    public NoteResponseDto createNote(CreateNoteDto noteDto, String token) {
-        String email = jwtService.getEmailFromToken(token);
-        Optional<User> optional = userRepository.findByEmail(email);
-        if (optional.isEmpty()) {
-            throw new IllegalArgumentException("User doesn't Exist");
-        }
-        String title = noteDto.title();
-        String content = noteDto.content();
-        List<String> tagContents = noteDto.tags();
-
-        if (!isTitleValid(title)) {
-            throw new IllegalArgumentException("Invalid Title");
-        }
-
-        if (!isContentValid(content)) {
-            throw new IllegalArgumentException("Invalid Content");
+                                                                                .build())))
+                                .toList();
+                Note note = Note.builder().title(title).content(content).isArchived(false).user(user).tags(tags)
+                                .build();
+                noteRepository.save(note);
+                return noteToNoteResponseDto(note);
         }
 
-        if (!isTagsValid(tagContents)) {
-            throw new IllegalArgumentException("Invalid Tags");
+        public NoteResponseDto patchUserNote(String email, Integer id, UpdateNoteDto noteDto) {
+
+                String title = noteDto.title();
+                String content = noteDto.content();
+                List<String> tagNames = noteDto.tags();
+
+                User user = getUserByEmail(email);
+                Note note = getOwnedNote(user, id);
+                List<Tag> tags = resolveTags(tagNames);
+
+                note.setTitle(title);
+                note.setContent(content);
+                note.setTags(tags);
+
+                Note saved = noteRepository.save(note);
+                return noteToNoteResponseDto(saved);
         }
 
-        User user = optional.get();
+        public NoteResponseDto archiveUserNote(String email, Integer id, boolean archiveStatus) {
 
-        List<Tag> tags = tagContents.stream()
-                .map(c -> tagRepository.findByContent(c)
-                        .orElseGet(() -> tagRepository.save(
-                                Tag.builder()
-                                        .content(c)
+                User user = getUserByEmail(email);
 
-                                        .build())))
-                .toList();
-        Note note = Note.builder().title(title).content(content).isArchived(false).user(user).tags(tags).build();
-        noteRepository.save(note);
-        return noteToNoteResponseDto(note);
-    }
+                Note note = getOwnedNote(user, id);
 
-    public NoteResponseDto patchNote(UpdateNoteDto noteDto, String token, String id) {
-
-        if (!isIdValid(id)) {
-            throw new IllegalArgumentException("Invalid Note ID");
+                note.setArchived(archiveStatus);
+                Note saved = noteRepository.save(note);
+                return noteToNoteResponseDto(saved);
         }
 
-        Integer noteId = Integer.parseInt(id);
-        String email = jwtService.getEmailFromToken(token);
-        String title = noteDto.title();
-        String content = noteDto.content();
-        List<String> tagContents = noteDto.tags();
+        public NoteResponseDto deleteUserNote(String email, Integer id) {
 
-        Optional<User> optional = userRepository.findByEmail(email);
+                User user = getUserByEmail(email);
 
-        if (optional.isEmpty()) {
-            throw new IllegalArgumentException("User doesn't Exist");
+                Note note = getOwnedNote(user, id);
+
+                NoteResponseDto deleted = noteToNoteResponseDto(note);
+                noteRepository.delete(note);
+                return deleted;
         }
 
-        User user = optional.get();
-
-        if (!isTitleValid(title)) {
-            throw new IllegalArgumentException("Invalid Title");
+        private User getUserByEmail(String email) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                return user;
         }
 
-        if (!isContentValid(content)) {
-            throw new IllegalArgumentException("Invalid Content");
+        private Note getOwnedNote(User user, Integer noteId) {
+                Note note = noteRepository.findById(noteId)
+                                .orElseThrow(() -> new IllegalArgumentException("Note not found"));
+                Integer noteOwnerId = note.getUser().getId();
+                if (noteOwnerId.equals(user.getId())) {
+                        throw new IllegalArgumentException("Forbidden");
+                }
+                return note;
+
         }
 
-        if (!isTagsValid(tagContents)) {
-            throw new IllegalArgumentException("Invalid Tags");
+        private List<Tag> resolveTags(List<String> tagNames) {
+                List<Tag> tags = tagNames.stream()
+                                .map(c -> tagRepository.findByContent(c)
+                                                .orElseGet(() -> tagRepository.save(
+                                                                Tag.builder()
+                                                                                .content(c)
+
+                                                                                .build())))
+                                .collect(Collectors.toList());
+                return tags;
         }
 
-        Optional<Note> optionalNote = noteRepository.findById(noteId);
-        if (optionalNote.isEmpty()) {
-            throw new IllegalArgumentException("Note is not Found");
+        private NoteResponseDto noteToNoteResponseDto(Note note) {
+                List<TagResponseDto> tags = note.getTags().stream().map(t -> tagToTagResponseDto(t)).toList();
+                return new NoteResponseDto(note.getId(), note.getTitle(), note.getContent(), note.isArchived(),
+                                note.getCreatedAt(), note.getUpdatedAt(), tags);
         }
 
-        Note note = optionalNote.get();
-
-        if (note.getUser().getId() != user.getId()) {
-            throw new IllegalArgumentException("Forbidden");
+        private TagResponseDto tagToTagResponseDto(Tag tag) {
+                return new TagResponseDto(tag.getId(), tag.getContent(), tag.getCreatedAt(), tag.getUpdatedAt());
         }
-        List<Tag> tags = tagContents.stream()
-                .map(c -> tagRepository.findByContent(c)
-                        .orElseGet(() -> tagRepository.save(
-                                Tag.builder()
-                                        .content(c)
-
-                                        .build())))
-                .collect(Collectors.toList());
-
-        note.setTitle(title);
-        note.setContent(content);
-        note.setTags(tags);
-
-        Note saved = noteRepository.save(note);
-        return noteToNoteResponseDto(saved);
-    }
-
-    public NoteResponseDto archiveNote(String id, String token, boolean archive) {
-
-        if (!isIdValid(id)) {
-            throw new IllegalArgumentException("Invalid Note ID");
-        }
-
-        Integer noteId = Integer.parseInt(id);
-        String email = jwtService.getEmailFromToken(token);
-
-        Optional<User> optional = userRepository.findByEmail(email);
-
-        if (optional.isEmpty()) {
-            throw new IllegalArgumentException("User doesn't Exist");
-        }
-
-        User user = optional.get();
-
-        Optional<Note> optionalNote = noteRepository.findById(noteId);
-        if (optionalNote.isEmpty()) {
-            throw new IllegalArgumentException("Note is not Found");
-        }
-
-        Note note = optionalNote.get();
-
-        if (note.getUser().getId() != user.getId()) {
-            throw new IllegalArgumentException("Forbidden");
-        }
-
-        note.setIsArchived(archive);
-        Note saved = noteRepository.save(note);
-        return noteToNoteResponseDto(saved);
-    }
-
-    public NoteResponseDto deleteNote(String id, String token) {
-        if (!isIdValid(id)) {
-            throw new IllegalArgumentException("Invalid Note ID");
-        }
-        Integer noteId = Integer.parseInt(id);
-        String email = jwtService.getEmailFromToken(token);
-
-        Optional<User> optional = userRepository.findByEmail(email);
-
-        if (optional.isEmpty()) {
-            throw new IllegalArgumentException("User doesn't Exist");
-        }
-
-        Optional<Note> optionalNote = noteRepository.findById(noteId);
-        if (optionalNote.isEmpty()) {
-            throw new IllegalArgumentException("Note is not Found");
-        }
-        User user = optional.get();
-        Note note = optionalNote.get();
-
-        if (note.getUser().getId() != user.getId()) {
-            throw new IllegalArgumentException("Forbidden");
-        }
-
-        NoteResponseDto deleted = noteToNoteResponseDto(note);
-        noteRepository.delete(note);
-        return deleted;
-    }
 
 }

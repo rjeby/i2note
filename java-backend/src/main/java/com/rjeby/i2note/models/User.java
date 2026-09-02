@@ -37,7 +37,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private Boolean isVerified = false;
+    private boolean isVerified = false;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

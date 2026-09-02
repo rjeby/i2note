@@ -255,7 +255,7 @@ export const getUserNotes = createAsyncThunk<NoteFetchResponse, string>("notes/g
   const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes`, {
     method: "GET",
     headers: {
-      Authorization: token,
+      Authorization: `Bearer ${token}`,
     },
   });
   const data = await response.json();
@@ -270,7 +270,7 @@ export const addNote = createAsyncThunk<NoteCreationResponse, NoteCreationPayloa
   const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes`, {
     method: "POST",
     headers: {
-      Authorization: token,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
@@ -287,7 +287,7 @@ export const deleteNote = createAsyncThunk<Note, NoteOperationPayload>("notes/de
   const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${id}`, {
     method: "DELETE",
     headers: {
-      Authorization: token,
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -305,7 +305,7 @@ export const archiveNote = createAsyncThunk<Note, NoteOperationPayload>("data/ar
   const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${id}/archive`, {
     method: "PUT",
     headers: {
-      Authorization: token,
+      Authorization: `Bearer ${token}`,
     },
   });
   const data = await response.json();
@@ -320,7 +320,7 @@ export const unArchiveNote = createAsyncThunk<Note, NoteOperationPayload>("data/
   const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${id}/unarchive`, {
     method: "PUT",
     headers: {
-      Authorization: token,
+      Authorization: `Bearer ${token}`,
     },
   });
   const data = await response.json();
@@ -337,7 +337,7 @@ export const updateNote = createAsyncThunk<NoteUpdateResponse, NoteUpdatePayload
     const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/api/notes/${payload.id}`, {
       method: "PATCH",
       headers: {
-        Authorization: token,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),

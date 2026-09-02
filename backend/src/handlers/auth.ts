@@ -109,10 +109,13 @@ export const signUp = async (req: Request, res: Response<{}, AuthPayload>) => {
 
 export const verifyEmail = async (req: Request<{}, {}, {}, { token: string }>, res: Response) => {
   const { token } = req.query;
-  if (!("token" in req.query) || typeof token !== "string") {
+  if (!("token" in req.query) || typeof token !== "string" || token.split(" ").length < 1) {
     return res.status(400).json({ message: "Invalid Token" });
   }
-  const payload = jwt.verify(token, process.env.SECRET);
+
+  const bearer = token.split(" ")[1];
+  
+  const payload = jwt.verify(bearer, process.env.SECRET);
   const email = (payload as { email: string }).email;
   const user = await db.user.findUnique({
     where: {

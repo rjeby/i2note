@@ -39,7 +39,7 @@ public class Note {
     private String content;
 
     @Column(nullable = false)
-    Boolean isArchived = false;
+    boolean isArchived = false;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
